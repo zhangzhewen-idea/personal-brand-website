@@ -12,17 +12,27 @@ export const createEntityListStore = <T extends { id: number }>(
     const submittingId = ref<number | null>(null)
     const error = ref<string | null>(null)
     const successMessage = ref<string | null>(null)
+    let operationVersion = 0
+    let removeRequestVersion = 0
 
     const load = async () => {
+      const version = ++operationVersion
       loading.value = true
       error.value = null
       successMessage.value = null
       try {
-        items.value = await service.list()
+        const nextItems = await service.list()
+        if (version === operationVersion) {
+          items.value = nextItems
+        }
       } catch (cause) {
-        error.value = cause instanceof Error ? '加载列表失败，请稍后重试' : '数据加载失败'
+        if (version === operationVersion) {
+          error.value = cause instanceof Error ? '加载列表失败，请稍后重试' : '数据加载失败'
+        }
       } finally {
-        loading.value = false
+        if (version === operationVersion) {
+          loading.value = false
+        }
       }
     }
 
@@ -31,19 +41,28 @@ export const createEntityListStore = <T extends { id: number }>(
       if (submittingId.value !== null) {
         return
       }
+      const version = ++operationVersion
+      const requestVersion = ++removeRequestVersion
       submittingId.value = id
+      loading.value = false
       error.value = null
       successMessage.value = null
       try {
         await service.remove(id)
-        items.value = items.value.filter((item) => item.id !== id)
-        successMessage.value = '删除成功'
+        if (version === operationVersion) {
+          items.value = items.value.filter((item) => item.id !== id)
+          successMessage.value = '删除成功'
+        }
       } catch (cause) {
-        successMessage.value = null
-        error.value = cause instanceof Error ? cause.message : '删除记录失败，请稍后重试'
+        if (version === operationVersion) {
+          successMessage.value = null
+          error.value = cause instanceof Error ? cause.message : '删除记录失败，请稍后重试'
+        }
         throw cause
       } finally {
-        submittingId.value = null
+        if (requestVersion === removeRequestVersion) {
+          submittingId.value = null
+        }
       }
     }
 

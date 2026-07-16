@@ -55,6 +55,33 @@ describe('entity list store', () => {
     expect(store.loading).toBe(false)
   })
 
+  it('两个 load 逆序返回时最终采用后一次结果', async () => {
+    let resolveFirst!: (items: TestEntity[]) => void
+    let resolveSecond!: (items: TestEntity[]) => void
+    const service = {
+      list: vi
+        .fn()
+        .mockImplementationOnce(
+          () => new Promise<TestEntity[]>((resolve) => { resolveFirst = resolve }),
+        )
+        .mockImplementationOnce(
+          () => new Promise<TestEntity[]>((resolve) => { resolveSecond = resolve }),
+        ),
+      remove: vi.fn(),
+    }
+    const store = createEntityListStore<TestEntity>('test-list-race', service)()
+
+    const firstLoad = store.load()
+    const secondLoad = store.load()
+    resolveSecond([{ id: 2, name: 'second' }])
+    await secondLoad
+    resolveFirst([{ id: 1, name: 'first' }])
+    await firstLoad
+
+    expect(store.items).toEqual([{ id: 2, name: 'second' }])
+    expect(store.loading).toBe(false)
+  })
+
   it('删除成功后才移除项目并复位 submittingId', async () => {
     const service = {
       list: vi.fn(),
@@ -104,6 +131,29 @@ describe('entity list store', () => {
 
     expect(service.remove).toHaveBeenCalledOnce()
     expect(store.items).toEqual([{ id: 2, name: 'two' }])
+    expect(store.submittingId).toBeNull()
+  })
+
+  it('load 未完成时删除成功，旧 load 结果不能恢复已删除项目', async () => {
+    let resolveLoad!: (items: TestEntity[]) => void
+    const service = {
+      list: vi.fn().mockImplementation(
+        () => new Promise<TestEntity[]>((resolve) => { resolveLoad = resolve }),
+      ),
+      remove: vi.fn().mockResolvedValue(undefined),
+    }
+    const store = createEntityListStore<TestEntity>('test-list-remove-race', service)()
+    store.items = [{ id: 1, name: 'one' }, { id: 2, name: 'two' }]
+
+    const loading = store.load()
+    const removing = store.remove(1)
+    await removing
+    resolveLoad([{ id: 1, name: 'one' }, { id: 2, name: 'two' }])
+    await loading
+
+    expect(store.items).toEqual([{ id: 2, name: 'two' }])
+    expect(store.successMessage).toBe('删除成功')
+    expect(store.loading).toBe(false)
     expect(store.submittingId).toBeNull()
   })
 })
