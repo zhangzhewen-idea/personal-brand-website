@@ -14,9 +14,25 @@ import {
   useUserStore,
   useVideoStore,
 } from '@/stores/entities'
+import {
+  courseRepository,
+  materialRepository,
+  matrixAccountRepository,
+  userRepository,
+  videoRepository,
+} from '@/mocks/repositories'
 
 describe('entity stores', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    await Promise.all([
+      userRepository.reset(),
+      videoRepository.reset(),
+      materialRepository.reset(),
+      matrixAccountRepository.reset(),
+      courseRepository.reset(),
+    ])
+  })
 
   it.each([
     ['用户', useUserStore, usersMock],
@@ -31,5 +47,21 @@ describe('entity stores', () => {
 
     expect(store.items).toEqual(expected)
     expect(store.items).toHaveLength(3)
+  })
+
+  it.each([
+    ['用户', useUserStore, userRepository],
+    ['视频', useVideoStore, videoRepository],
+    ['素材', useMaterialStore, materialRepository],
+    ['矩阵账号', useMatrixAccountStore, matrixAccountRepository],
+    ['课程', useCourseStore, courseRepository],
+  ] as const)('%s store 删除后对应 mock 列表少一条', async (_label, useStore, repository) => {
+    const store = useStore()
+    await store.load()
+
+    await store.remove(1)
+
+    expect(store.items).toHaveLength(2)
+    await expect(repository.list()).resolves.toHaveLength(2)
   })
 })

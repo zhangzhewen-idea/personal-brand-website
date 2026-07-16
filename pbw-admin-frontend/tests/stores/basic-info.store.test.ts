@@ -27,6 +27,17 @@ describe('basic info store', () => {
 
     await expect(store.load()).rejects.toBe(failure)
 
+    expect(store.error).toBe('读取失败')
+    expect(store.loading).toBe(false)
+  })
+
+  it('repository.get 以非 Error rejection 失败时记录兜底错误', async () => {
+    vi.spyOn(basicInfoRepository, 'get').mockRejectedValue('读取失败')
+    const store = useBasicInfoStore()
+
+    await expect(store.load()).rejects.toBe('读取失败')
+
+    expect(store.error).toBe('基本信息加载失败')
     expect(store.loading).toBe(false)
   })
 })
