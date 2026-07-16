@@ -21,5 +21,8 @@ export default defineConfig({
     globals: true,
     include: ['tests/**/*.test.ts'],
     setupFiles: ['./tests/setup.ts'],
+    server: {
+      deps: { inline: ['element-plus'] },
+    },
   },
 })
