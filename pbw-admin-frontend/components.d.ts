@@ -11,6 +11,8 @@ declare module 'vue' {
     AdminHeader: typeof import('./src/components/layout/AdminHeader.vue')['default']
     AdminLayout: typeof import('./src/components/layout/AdminLayout.vue')['default']
     AdminSidebar: typeof import('./src/components/layout/AdminSidebar.vue')['default']
+    DataTableCard: typeof import('./src/components/common/DataTableCard.vue')['default']
+    DeleteAction: typeof import('./src/components/common/DeleteAction.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElBreadcrumb: typeof import('element-plus/es')['ElBreadcrumb']
     ElBreadcrumbItem: typeof import('element-plus/es')['ElBreadcrumbItem']
@@ -24,10 +26,19 @@ declare module 'vue' {
     ElInput: typeof import('element-plus/es')['ElInput']
     ElMenu: typeof import('element-plus/es')['ElMenu']
     ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
+    ElOption: typeof import('element-plus/es')['ElOption']
+    ElPagination: typeof import('element-plus/es')['ElPagination']
+    ElSelect: typeof import('element-plus/es')['ElSelect']
     ElSkeleton: typeof import('element-plus/es')['ElSkeleton']
     ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
     ElTag: typeof import('element-plus/es')['ElTag']
+    ListToolbar: typeof import('./src/components/common/ListToolbar.vue')['default']
+    MediaThumbnail: typeof import('./src/components/common/MediaThumbnail.vue')['default']
+    PageHeader: typeof import('./src/components/common/PageHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+  }
+  export interface GlobalDirectives {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }
