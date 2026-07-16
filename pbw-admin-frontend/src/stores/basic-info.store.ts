@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { BasicInfo } from '@/models/entities'
-import { basicInfoRepository } from '@/mocks/repositories'
+import { basicInfoService } from '@/services/basic-info.service'
 
 export const useBasicInfoStore = defineStore('basic-info', () => {
   const info = ref<BasicInfo | null>(null)
@@ -10,7 +10,7 @@ export const useBasicInfoStore = defineStore('basic-info', () => {
   const load = async () => {
     loading.value = true
     try {
-      info.value = await basicInfoRepository.get()
+      info.value = await basicInfoService.get()
     } finally {
       loading.value = false
     }

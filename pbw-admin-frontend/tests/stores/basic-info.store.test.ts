@@ -10,6 +10,9 @@ describe('basic info store', () => {
 
   it('加载成功后设置 info', async () => {
     const store = useBasicInfoStore()
+    const sameStore = useBasicInfoStore()
+
+    expect(sameStore).toBe(store)
 
     await store.load()
 
