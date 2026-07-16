@@ -14,6 +14,7 @@ export const createEntityListStore = <T extends { id: number }>(
     const successMessage = ref<string | null>(null)
     let operationVersion = 0
     let removeRequestVersion = 0
+    const pendingRemovalIds = new Set<number>()
 
     const load = async () => {
       const version = ++operationVersion
@@ -23,7 +24,7 @@ export const createEntityListStore = <T extends { id: number }>(
       try {
         const nextItems = await service.list()
         if (version === operationVersion) {
-          items.value = nextItems
+          items.value = nextItems.filter((item) => !pendingRemovalIds.has(item.id))
         }
       } catch (cause) {
         if (version === operationVersion) {
@@ -43,17 +44,18 @@ export const createEntityListStore = <T extends { id: number }>(
       }
       const version = ++operationVersion
       const requestVersion = ++removeRequestVersion
+      pendingRemovalIds.add(id)
       submittingId.value = id
       loading.value = false
       error.value = null
       successMessage.value = null
       try {
         await service.remove(id)
-        if (version === operationVersion) {
-          items.value = items.value.filter((item) => item.id !== id)
-          successMessage.value = '删除成功'
-        }
+        pendingRemovalIds.delete(id)
+        items.value = items.value.filter((item) => item.id !== id)
+        successMessage.value = '删除成功'
       } catch (cause) {
+        pendingRemovalIds.delete(id)
         if (version === operationVersion) {
           successMessage.value = null
           error.value = cause instanceof Error ? cause.message : '删除记录失败，请稍后重试'

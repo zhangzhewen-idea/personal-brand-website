@@ -156,4 +156,33 @@ describe('entity list store', () => {
     expect(store.loading).toBe(false)
     expect(store.submittingId).toBeNull()
   })
+
+  it('remove 未完成时触发 load，load 返回待删除 id 后最终仍不保留该 id', async () => {
+    let resolveLoad!: (items: TestEntity[]) => void
+    let resolveRemove!: () => void
+    const service = {
+      list: vi.fn().mockImplementation(
+        () => new Promise<TestEntity[]>((resolve) => { resolveLoad = resolve }),
+      ),
+      remove: vi.fn().mockImplementation(
+        () => new Promise<void>((resolve) => { resolveRemove = resolve }),
+      ),
+    }
+    const store = createEntityListStore<TestEntity>('test-remove-load-race', service)()
+    store.items = [{ id: 1, name: 'one' }, { id: 2, name: 'two' }]
+
+    const removing = store.remove(1)
+    const loading = store.load()
+    resolveLoad([{ id: 1, name: 'one' }, { id: 2, name: 'two' }])
+    await loading
+    expect(store.items).toEqual([{ id: 2, name: 'two' }])
+    expect(store.submittingId).toBe(1)
+
+    resolveRemove()
+    await removing
+
+    expect(store.items).toEqual([{ id: 2, name: 'two' }])
+    expect(store.successMessage).toBe('删除成功')
+    expect(store.submittingId).toBeNull()
+  })
 })
