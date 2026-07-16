@@ -6,6 +6,10 @@
       </template>
     </PageHeader>
 
+    <el-alert v-if="userStore.error" :title="userStore.error" type="error" :closable="false" show-icon class="users-error">
+      <template #default><el-button type="danger" link @click="retryLoad">重试</el-button></template>
+    </el-alert>
+
     <div class="list-card">
       <ListToolbar placeholder="请输入昵称、账号或邮箱" @search="noop" @reset="noop" />
       <DataTableCard :loading="userStore.loading" :empty="!userStore.items.length" :total="userStore.items.length">
@@ -60,6 +64,7 @@ import { formatDateTime } from '@/utils/formatters'
 
 const userStore = useUserStore()
 const noop = () => undefined
+const retryLoad = () => { void userStore.load() }
 
 onMounted(() => { void userStore.load() })
 </script>

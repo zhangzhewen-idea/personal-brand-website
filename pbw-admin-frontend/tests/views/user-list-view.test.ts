@@ -68,4 +68,21 @@ describe('UserListView', () => {
     await flushPromises()
     expect(userStore.loading).toBe(false)
   })
+
+  it('加载失败时显示错误提示，点击重试后重新加载用户列表', async () => {
+    vi.spyOn(userService, 'list')
+      .mockRejectedValueOnce(new Error('用户列表暂不可用'))
+      .mockResolvedValueOnce([])
+    const wrapper = mount(UserListView, { global: { plugins: [createPinia()] } })
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('加载列表失败，请稍后重试')
+    const retry = wrapper.findAll('button').find((button) => button.text().includes('重试'))
+    expect(retry).toBeDefined()
+
+    await retry!.trigger('click')
+    await flushPromises()
+
+    expect(userService.list).toHaveBeenCalledTimes(2)
+  })
 })
