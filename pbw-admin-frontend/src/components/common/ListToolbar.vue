@@ -6,8 +6,8 @@
       <el-option label="禁用" value="disabled" />
     </el-select>
     <div class="list-toolbar__actions">
-      <el-button type="primary">查询</el-button>
-      <el-button @click="reset">重置</el-button>
+      <el-button type="primary" @click="emit('search')">查询</el-button>
+      <el-button @click="reset(); emit('reset')">重置</el-button>
     </div>
   </div>
 </template>
@@ -16,6 +16,10 @@
 import { ref } from 'vue'
 
 withDefaults(defineProps<{ placeholder?: string }>(), { placeholder: '请输入关键词' })
+const emit = defineEmits<{
+  search: []
+  reset: []
+}>()
 const keyword = ref('')
 const status = ref('')
 const reset = () => { keyword.value = ''; status.value = '' }

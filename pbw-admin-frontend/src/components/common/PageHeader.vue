@@ -15,6 +15,9 @@ defineProps<{
   title: string
   description?: string
 }>()
+defineSlots<{
+  actions?: () => any
+}>()
 </script>
 
 <style scoped>

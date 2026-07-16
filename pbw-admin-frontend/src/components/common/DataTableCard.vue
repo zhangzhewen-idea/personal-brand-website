@@ -15,6 +15,9 @@ withDefaults(defineProps<{
   empty?: boolean
   total?: number
 }>(), { loading: false, empty: false, total: 0 })
+defineSlots<{
+  default?: () => any
+}>()
 </script>
 
 <style scoped>

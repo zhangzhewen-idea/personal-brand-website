@@ -1,7 +1,9 @@
-import { mount } from '@vue/test-utils'
+import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import DeleteAction from '@/components/common/DeleteAction.vue'
+
+enableAutoUnmount(afterEach)
 
 describe('DeleteAction', () => {
   afterEach(() => vi.restoreAllMocks())
@@ -55,5 +57,38 @@ describe('DeleteAction', () => {
       expect.any(String),
       expect.any(Object),
     )
+  })
+
+  it('确认阶段连续点击只发起一次确认和删除', async () => {
+    let resolveConfirm!: (value: 'confirm') => void
+    const confirmPromise = new Promise<'confirm'>((resolve) => { resolveConfirm = resolve })
+    vi.spyOn(ElMessageBox, 'confirm').mockReturnValue(confirmPromise as never)
+    const onDelete = vi.fn().mockResolvedValue(undefined)
+    const wrapper = mount(DeleteAction, { props: { onDelete } })
+
+    await Promise.all([wrapper.get('button').trigger('click'), wrapper.get('button').trigger('click')])
+    expect(ElMessageBox.confirm).toHaveBeenCalledTimes(1)
+
+    resolveConfirm('confirm')
+    await vi.waitFor(() => expect(onDelete).toHaveBeenCalledTimes(1))
+  })
+
+  it('外部 loading 时不发起确认', async () => {
+    const confirm = vi.spyOn(ElMessageBox, 'confirm')
+    const wrapper = mount(DeleteAction, { props: { loading: true, onDelete: vi.fn() } })
+
+    await wrapper.get('button').trigger('click')
+
+    expect(confirm).not.toHaveBeenCalled()
+  })
+
+  it('确认框发生非取消异常时提示确认失败', async () => {
+    vi.spyOn(ElMessageBox, 'confirm').mockRejectedValue(new Error('dialog failed'))
+    const error = vi.spyOn(ElMessage, 'error')
+    const wrapper = mount(DeleteAction, { props: { onDelete: vi.fn() } })
+
+    await wrapper.get('button').trigger('click')
+
+    await vi.waitFor(() => expect(error).toHaveBeenCalledWith('删除确认失败，请稍后重试'))
   })
 })
