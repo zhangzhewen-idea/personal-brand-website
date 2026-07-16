@@ -17,8 +17,8 @@ export const createEntityListStore = <T extends { id: number }>(
       error.value = null
       try {
         items.value = await service.list()
-      } catch {
-        error.value = '加载列表失败，请稍后重试'
+      } catch (cause) {
+        error.value = cause instanceof Error ? '加载列表失败，请稍后重试' : '数据加载失败'
       } finally {
         loading.value = false
       }

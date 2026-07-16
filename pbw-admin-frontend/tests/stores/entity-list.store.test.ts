@@ -37,6 +37,19 @@ describe('entity list store', () => {
     expect(store.loading).toBe(false)
   })
 
+  it('加载失败为非 Error rejection 时记录兜底错误并复位 loading', async () => {
+    const service = {
+      list: vi.fn().mockRejectedValue('接口异常'),
+      remove: vi.fn(),
+    }
+    const store = createEntityListStore<TestEntity>('test-list-non-error', service)()
+
+    await expect(store.load()).resolves.toBeUndefined()
+
+    expect(store.error).toBe('数据加载失败')
+    expect(store.loading).toBe(false)
+  })
+
   it('删除成功后才移除项目并复位 submittingId', async () => {
     const service = {
       list: vi.fn(),
