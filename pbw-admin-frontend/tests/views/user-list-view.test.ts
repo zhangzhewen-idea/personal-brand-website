@@ -36,8 +36,8 @@ describe('UserListView', () => {
         plugins: [pinia],
         stubs: {
           DeleteAction: {
-            props: ['onDelete', 'loading'],
-            template: '<button data-testid="delete-action" @click="onDelete">删除</button>',
+            props: ['onDelete', 'loading', 'title'],
+            template: '<button data-testid="delete-action" :data-title="title" @click="onDelete">删除</button>',
           },
         },
       },
@@ -47,6 +47,7 @@ describe('UserListView', () => {
     await wrapper.get('[data-testid="delete-action"]').trigger('click')
     await flushPromises()
 
+    expect(wrapper.get('[data-testid="delete-action"]').attributes('data-title')).toBe('1 · 管理员（admin）')
     expect(remove).toHaveBeenCalledWith(1)
     expect(wrapper.text()).toContain('新增用户')
     expect(wrapper.text()).toContain('查看')

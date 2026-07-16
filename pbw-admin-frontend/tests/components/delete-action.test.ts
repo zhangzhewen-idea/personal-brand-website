@@ -48,15 +48,14 @@ describe('DeleteAction', () => {
 
   it('确认提示包含测试会话说明', async () => {
     const confirm = vi.spyOn(ElMessageBox, 'confirm').mockResolvedValue('confirm' as never)
-    const wrapper = mount(DeleteAction, { props: { onDelete: vi.fn() } })
+    const title = '1 · 管理员（admin）'
+    const wrapper = mount(DeleteAction, { props: { title, onDelete: vi.fn() } })
 
     await wrapper.get('button').trigger('click')
 
-    expect(confirm).toHaveBeenCalledWith(
-      expect.stringContaining('当前测试会话删除、刷新恢复'),
-      expect.any(String),
-      expect.any(Object),
-    )
+    expect(confirm).toHaveBeenCalledWith(expect.any(String), '确认删除', expect.any(Object))
+    expect(confirm.mock.calls[0]?.[0]).toEqual(expect.stringContaining(title))
+    expect(confirm.mock.calls[0]?.[0]).toEqual(expect.stringContaining('当前测试会话删除、刷新恢复'))
   })
 
   it('确认阶段连续点击只发起一次确认和删除', async () => {

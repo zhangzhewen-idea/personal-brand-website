@@ -25,7 +25,7 @@ const requestDelete = async () => {
   if (props.loading || confirming.value || submitting.value) return
   confirming.value = true
   try {
-    await ElMessageBox.confirm('删除后当前测试会话删除、刷新恢复。是否继续？', '确认删除', { type: 'warning' })
+    await ElMessageBox.confirm(`确认删除「${props.title}」？删除后当前测试会话删除、刷新恢复。是否继续？`, '确认删除', { type: 'warning' })
   } catch (error) {
     if (!isCancellation(error)) ElMessage.error('删除确认失败，请稍后重试')
     return
