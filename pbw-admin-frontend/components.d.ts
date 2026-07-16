@@ -39,6 +39,7 @@ declare module 'vue' {
     PageHeader: typeof import('./src/components/common/PageHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    StatusBadge: typeof import('./src/components/common/StatusBadge.vue')['default']
   }
   export interface GlobalDirectives {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']
