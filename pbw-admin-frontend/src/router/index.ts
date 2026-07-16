@@ -21,7 +21,7 @@ export function createAppRouter(pinia: Pinia, history: RouterHistory = createWeb
         meta: { requiresAuth: true },
         children: [
           { path: '', redirect: '/dashboard' },
-          { path: 'dashboard', name: 'dashboard', component: lazy(() => import('@/views/DashboardView.vue')), meta: { title: '首页', requiresAuth: true } },
+          { path: 'dashboard', name: 'dashboard', component: lazy(() => import('@/views/dashboard/DashboardView.vue')), meta: { title: '首页', requiresAuth: true } },
           { path: 'users', name: 'users', component: lazy(() => import('@/views/UserListView.vue')), meta: { title: '用户管理', requiresAuth: true } },
           { path: 'content/basic-info', name: 'basic-info', component: lazy(() => import('@/views/BasicInfoView.vue')), meta: { title: '基本信息', requiresAuth: true } },
           { path: 'content/videos', name: 'videos', component: lazy(() => import('@/views/VideoListView.vue')), meta: { title: '视频管理', requiresAuth: true } },
