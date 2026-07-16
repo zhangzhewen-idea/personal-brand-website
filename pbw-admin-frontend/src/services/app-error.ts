@@ -4,6 +4,8 @@ export type AppErrorCode =
   | 'INVALID_CREDENTIALS'
   | 'TEST_USER_MISSING'
   | 'SESSION_PERSIST_FAILED'
+  | 'NOT_FOUND'
+  | 'DELETE_FAILED'
 
 export class AppError extends Error {
   readonly code: AppErrorCode
