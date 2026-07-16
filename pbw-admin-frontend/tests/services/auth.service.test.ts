@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createAuthService } from '@/services/auth.service'
 import { AppError } from '@/services/app-error'
+import { usersMock } from '@/mocks/data/database.mock'
 
 const createStorage = () => {
   const values = new Map<string, string>()
@@ -23,6 +24,43 @@ describe('auth service', () => {
     expect(session.user).not.toHaveProperty('password')
     expect(JSON.parse(storage.getItem('pbw-admin-session')!)).not.toHaveProperty('user.password')
     expect(service.restore()).toEqual(session)
+  })
+
+  it('登录和恢复都会清洗独立运行时用户对象中的 password', async () => {
+    const storage = createStorage()
+    const runtimeUser = { ...usersMock[0], password: 'runtime-secret' }
+    const service = createAuthService(storage, [runtimeUser])
+
+    const session = await service.login({ account: 'admin', password: '123456', testMode: true })
+    const persisted = JSON.parse(storage.getItem('pbw-admin-session')!)
+
+    expect(session.user).not.toHaveProperty('password')
+    expect(persisted.user).not.toHaveProperty('password')
+    expect(service.restore()?.user).not.toHaveProperty('password')
+  })
+
+  const invalidSessions: Array<[string, { token?: string; user?: Record<string, unknown> }]> = [
+    ['空 token', { token: '  ' }],
+    ['缺少 id', { user: { ...usersMock[0], id: undefined } }],
+    ['空 account', { user: { ...usersMock[0], account: ' ' } }],
+    ['空 nickname', { user: { ...usersMock[0], nickname: '' } }],
+    ['非法 role', { user: { ...usersMock[0], role: '访客' } }],
+    ['非法 createTime', { user: { ...usersMock[0], createTime: 1 } }],
+    ['非法 updateTime', { user: { ...usersMock[0], updateTime: null } }],
+    ['非法 isDeleted', { user: { ...usersMock[0], isDeleted: 'false' } }],
+  ]
+
+  it.each(invalidSessions)('恢复时拒绝%s并清除 session', (_, override) => {
+    const storage = createStorage()
+    storage.setItem('pbw-admin-session', JSON.stringify({
+      token: 'token',
+      user: { ...usersMock[0], ...(override.user ?? {}) },
+      ...override,
+    }))
+    const service = createAuthService(storage)
+
+    expect(service.restore()).toBeNull()
+    expect(storage.getItem('pbw-admin-session')).toBeNull()
   })
 
   it('测试模式下拒绝错误凭据', async () => {

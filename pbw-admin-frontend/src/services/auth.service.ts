@@ -6,25 +6,51 @@ import { AppError } from './app-error'
 export const AUTH_SESSION_STORAGE_KEY = 'pbw-admin-session'
 export const TEST_AUTH_TOKEN = 'pbw-admin-test-token'
 
+type RuntimeUser = UserProfile & { password?: unknown }
+
 const browserSessionStorage: SessionStoragePort = {
   getItem: (key) => sessionStorage.getItem(key),
   setItem: (key, value) => sessionStorage.setItem(key, value),
   removeItem: (key) => sessionStorage.removeItem(key),
 }
 
-const isUserProfile = (value: unknown): value is UserProfile => {
+const isNonEmptyString = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0
+
+const isUserProfile = (value: unknown): value is RuntimeUser => {
   if (!value || typeof value !== 'object') return false
-  const user = value as Partial<UserProfile>
-  return typeof user.id === 'number' && typeof user.account === 'string' && typeof user.nickname === 'string'
+  const user = value as Partial<RuntimeUser>
+  return (
+    typeof user.id === 'number' &&
+    isNonEmptyString(user.account) &&
+    isNonEmptyString(user.nickname) &&
+    (user.role === '用户' || user.role === '管理员') &&
+    typeof user.createTime === 'string' &&
+    typeof user.updateTime === 'string' &&
+    typeof user.isDeleted === 'boolean' &&
+    (user.email === null || typeof user.email === 'string') &&
+    (user.avatar === null || typeof user.avatar === 'string')
+  )
 }
 
-export const createAuthService = (storage: SessionStoragePort) => ({
+export const sanitizeUser = (user: RuntimeUser): UserProfile => ({
+  id: user.id,
+  createTime: user.createTime,
+  updateTime: user.updateTime,
+  isDeleted: user.isDeleted,
+  nickname: user.nickname,
+  account: user.account,
+  email: user.email,
+  avatar: user.avatar,
+  role: user.role,
+})
+
+export const createAuthService = (storage: SessionStoragePort, source: readonly RuntimeUser[] = usersMock) => ({
   async login(payload: LoginPayload): Promise<AuthSession> {
     if (!payload.testMode) {
       throw new AppError('真实登录 API 暂不可用', 'API_UNAVAILABLE')
     }
 
-    const user = usersMock.find((candidate) => candidate.account === 'admin')
+    const user = source.find((candidate) => candidate.account === 'admin')
     if (!user) {
       throw new AppError('测试用户不存在', 'TEST_USER_MISSING')
     }
@@ -34,7 +60,7 @@ export const createAuthService = (storage: SessionStoragePort) => ({
 
     const session: AuthSession = {
       token: TEST_AUTH_TOKEN,
-      user: { ...user },
+      user: sanitizeUser(user),
     }
     storage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session))
     return session
@@ -48,10 +74,9 @@ export const createAuthService = (storage: SessionStoragePort) => ({
       const parsed: unknown = JSON.parse(raw)
       if (!parsed || typeof parsed !== 'object') throw new Error('invalid session')
       const candidate = parsed as { token?: unknown; user?: unknown }
-      if (typeof candidate.token !== 'string' || !isUserProfile(candidate.user)) throw new Error('invalid session')
+      if (!isNonEmptyString(candidate.token) || !isUserProfile(candidate.user)) throw new Error('invalid session')
 
-      const { password: _password, ...safeUser } = candidate.user as UserProfile & { password?: unknown }
-      return { token: candidate.token, user: safeUser }
+      return { token: candidate.token, user: sanitizeUser(candidate.user) }
     } catch {
       storage.removeItem(AUTH_SESSION_STORAGE_KEY)
       return null

@@ -28,6 +28,8 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = session.user
       return session
     } catch (cause) {
+      token.value = null
+      user.value = null
       error.value = cause instanceof AppError ? cause : new AppError('登录失败')
       throw cause
     } finally {

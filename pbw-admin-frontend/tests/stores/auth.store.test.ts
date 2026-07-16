@@ -22,6 +22,7 @@ describe('auth store', () => {
 
   it('登录失败后保留错误并继续抛出', async () => {
     const store = useAuthStore()
+    await store.login({ account: 'admin', password: '123456', testMode: true })
 
     await expect(store.login({ account: 'admin', password: 'wrong', testMode: true })).rejects.toMatchObject({
       code: 'INVALID_CREDENTIALS',
@@ -30,6 +31,20 @@ describe('auth store', () => {
     expect(store.error?.code).toBe('INVALID_CREDENTIALS')
     expect(store.loading).toBe(false)
     expect(store.isAuthenticated).toBe(false)
+    expect(store.token).toBeNull()
+    expect(store.user).toBeNull()
+  })
+
+  it('初始化时恢复持久化会话', async () => {
+    const firstStore = useAuthStore()
+    await firstStore.login({ account: 'admin', password: '123456', testMode: true })
+
+    setActivePinia(createPinia())
+    const restoredStore = useAuthStore()
+
+    expect(restoredStore.isAuthenticated).toBe(true)
+    expect(restoredStore.token).toBe('pbw-admin-test-token')
+    expect(restoredStore.user?.account).toBe('admin')
   })
 
   it('退出登录后清理状态', async () => {
