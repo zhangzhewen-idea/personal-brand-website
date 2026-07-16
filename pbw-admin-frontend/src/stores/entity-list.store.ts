@@ -12,26 +12,31 @@ export const createEntityListStore = <T extends { id: number }>(
     const submittingId = ref<number | null>(null)
     const error = ref<string | null>(null)
     const successMessage = ref<string | null>(null)
-    let operationVersion = 0
+    let latestLoadId = 0
     let removeRequestVersion = 0
     const pendingRemovalIds = new Set<number>()
+    const removedIds = new Set<number>()
+    const removalSnapshots = new Map<number, T[]>()
 
     const load = async () => {
-      const version = ++operationVersion
+      const loadId = ++latestLoadId
       loading.value = true
       error.value = null
       successMessage.value = null
       try {
         const nextItems = await service.list()
-        if (version === operationVersion) {
-          items.value = nextItems.filter((item) => !pendingRemovalIds.has(item.id))
+        if (loadId === latestLoadId) {
+          items.value = nextItems.filter(
+            (item) => !pendingRemovalIds.has(item.id) && !removedIds.has(item.id),
+          )
         }
       } catch (cause) {
-        if (version === operationVersion) {
+        if (loadId === latestLoadId) {
           error.value = cause instanceof Error ? '加载列表失败，请稍后重试' : '数据加载失败'
+          successMessage.value = null
         }
       } finally {
-        if (version === operationVersion) {
+        if (loadId === latestLoadId) {
           loading.value = false
         }
       }
@@ -42,24 +47,35 @@ export const createEntityListStore = <T extends { id: number }>(
       if (submittingId.value !== null) {
         return
       }
-      const version = ++operationVersion
       const requestVersion = ++removeRequestVersion
+      removalSnapshots.set(id, items.value.slice())
+      removedIds.delete(id)
       pendingRemovalIds.add(id)
       submittingId.value = id
-      loading.value = false
       error.value = null
       successMessage.value = null
       try {
         await service.remove(id)
         pendingRemovalIds.delete(id)
+        removalSnapshots.delete(id)
+        removedIds.add(id)
         items.value = items.value.filter((item) => item.id !== id)
         successMessage.value = '删除成功'
+        error.value = null
       } catch (cause) {
         pendingRemovalIds.delete(id)
-        if (version === operationVersion) {
-          successMessage.value = null
-          error.value = cause instanceof Error ? cause.message : '删除记录失败，请稍后重试'
+        removedIds.delete(id)
+        const snapshot = removalSnapshots.get(id)
+        removalSnapshots.delete(id)
+        const snapshotItem = snapshot?.find((item) => item.id === id)
+        if (snapshotItem && !items.value.some((item) => item.id === id)) {
+          const snapshotIndex = snapshot?.findIndex((item) => item.id === id) ?? items.value.length
+          const nextItems = items.value.slice()
+          nextItems.splice(Math.min(snapshotIndex, nextItems.length), 0, snapshotItem)
+          items.value = nextItems
         }
+        successMessage.value = null
+        error.value = cause instanceof Error ? cause.message : '删除记录失败，请稍后重试'
         throw cause
       } finally {
         if (requestVersion === removeRequestVersion) {

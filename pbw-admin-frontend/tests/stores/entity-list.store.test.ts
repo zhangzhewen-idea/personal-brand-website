@@ -185,4 +185,63 @@ describe('entity list store', () => {
     expect(store.successMessage).toBe('删除成功')
     expect(store.submittingId).toBeNull()
   })
+
+  it('删除失败期间 load 返回后恢复记录并保留删除错误', async () => {
+    let resolveLoad!: (items: TestEntity[]) => void
+    let rejectRemove!: (cause: Error) => void
+    const service = {
+      list: vi.fn().mockImplementation(
+        () => new Promise<TestEntity[]>((resolve) => { resolveLoad = resolve }),
+      ),
+      remove: vi.fn().mockImplementation(
+        () => new Promise<void>((_resolve, reject) => { rejectRemove = reject }),
+      ),
+    }
+    const store = createEntityListStore<TestEntity>('test-remove-failure-load', service)()
+    store.items = [{ id: 1, name: 'one' }, { id: 2, name: 'two' }]
+
+    const removing = store.remove(1)
+    const loading = store.load()
+    resolveLoad([{ id: 1, name: 'one' }, { id: 2, name: 'two' }])
+    await loading
+    expect(store.items).toEqual([{ id: 2, name: 'two' }])
+
+    const failure = new Error('删除失败')
+    rejectRemove(failure)
+    await expect(removing).rejects.toBe(failure)
+
+    expect(store.items).toEqual([{ id: 1, name: 'one' }, { id: 2, name: 'two' }])
+    expect(store.error).toBe('删除失败')
+    expect(store.successMessage).toBeNull()
+    expect(store.submittingId).toBeNull()
+  })
+
+  it('删除成功后 load 失败时只保留最新 load error', async () => {
+    let resolveRemove!: () => void
+    let rejectLoad!: (cause: Error) => void
+    const service = {
+      list: vi.fn().mockImplementation(
+        () => new Promise<TestEntity[]>((_resolve, reject) => { rejectLoad = reject }),
+      ),
+      remove: vi.fn().mockImplementation(
+        () => new Promise<void>((resolve) => { resolveRemove = resolve }),
+      ),
+    }
+    const store = createEntityListStore<TestEntity>('test-remove-success-load-failure', service)()
+    store.items = [{ id: 1, name: 'one' }]
+
+    const removing = store.remove(1)
+    const loading = store.load()
+    resolveRemove()
+    await removing
+    expect(store.successMessage).toBe('删除成功')
+
+    const failure = new Error('加载失败')
+    rejectLoad(failure)
+    await loading
+
+    expect(store.items).toEqual([])
+    expect(store.error).toBe('加载列表失败，请稍后重试')
+    expect(store.successMessage).toBeNull()
+  })
 })
