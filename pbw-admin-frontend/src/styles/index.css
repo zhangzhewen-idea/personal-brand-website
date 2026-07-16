@@ -1,0 +1,22 @@
+:root {
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #172033;
+  background: #f4f6fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --pbw-primary: #5b73f2;
+  --pbw-sidebar: #111827;
+  --pbw-page: #f4f6fa;
+  --pbw-card: #ffffff;
+  --pbw-text: #172033;
+  --pbw-muted: #7c8799;
+  --pbw-border: #e7ebf1;
+  --el-color-primary: #5b73f2;
+  --el-border-radius-base: 8px;
+}
+
+* { box-sizing: border-box; }
+html, body, #app { min-width: 320px; min-height: 100%; margin: 0; }
+body { min-height: 100vh; background: var(--pbw-page); }
+button, input, textarea, select { font: inherit; }
+.placeholder-page { padding: 32px; border: 1px solid var(--pbw-border); background: var(--pbw-card); }.placeholder-page h1 { margin: 0 0 12px; color: var(--pbw-text); }.placeholder-page p { color: var(--pbw-muted); }.eyebrow { color: var(--pbw-primary); font-size: 11px; letter-spacing: .16em; }
