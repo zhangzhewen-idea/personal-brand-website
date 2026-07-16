@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -19,6 +19,8 @@ function isActive(path: string) {
 function closeMobileMenu() {
   isMobileMenuOpen.value = false
 }
+
+watch(() => route.path, closeMobileMenu)
 </script>
 
 <template>
@@ -48,7 +50,7 @@ function closeMobileMenu() {
         data-testid="mobile-menu-toggle"
         type="button"
         class="rounded-lg p-2 text-gray-950 md:hidden"
-        aria-label="打开菜单"
+        :aria-label="isMobileMenuOpen ? '关闭菜单' : '打开菜单'"
         :aria-expanded="isMobileMenuOpen"
         @click="isMobileMenuOpen = !isMobileMenuOpen"
       >

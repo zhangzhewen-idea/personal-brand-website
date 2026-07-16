@@ -83,6 +83,7 @@ describe('Navigation', () => {
 
     await wrapper.find('[data-testid="mobile-menu-toggle"]').trigger('click')
     expect(wrapper.find('[data-testid="mobile-menu"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="mobile-menu-toggle"]').attributes('aria-label')).toBe('关闭菜单')
 
     const servicesLink = wrapper.find('[data-testid="mobile-nav-link-services"]')
     expect(servicesLink.attributes('href')).toBe('/services')
@@ -90,5 +91,20 @@ describe('Navigation', () => {
     await nextTick()
 
     expect(wrapper.find('[data-testid="mobile-menu"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="mobile-menu-toggle"]').attributes('aria-label')).toBe('打开菜单')
+  })
+
+  it('closes the mobile menu when the route changes externally', async () => {
+    const router = await readyRouter(createAppRouter(createMemoryHistory()), '/')
+    const wrapper = mount(Navigation, { global: { plugins: [router, createPinia()] } })
+
+    await wrapper.find('[data-testid="mobile-menu-toggle"]').trigger('click')
+    expect(wrapper.find('[data-testid="mobile-menu"]').exists()).toBe(true)
+
+    await router.push('/about')
+    await nextTick()
+
+    expect(wrapper.find('[data-testid="mobile-menu"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="mobile-menu-toggle"]').attributes('aria-label')).toBe('打开菜单')
   })
 })
