@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-import ElementPlus from 'element-plus'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import { router } from './router'
@@ -12,7 +11,6 @@ export function bootstrap(root: string | Element = '#app') {
 
   app.use(router)
   app.use(pinia)
-  app.use(ElementPlus)
   app.mount(root)
 
   return app
