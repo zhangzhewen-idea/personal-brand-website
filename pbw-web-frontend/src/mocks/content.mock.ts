@@ -51,6 +51,22 @@ export const videoMocks: Video[] = [
     videoCover: 'https://cdn.example.com/images/annual-film-list-cover.jpg',
     ...auditDefaults,
   },
+  {
+    id: 3,
+    videoTitle: '一支短片的声音设计',
+    videoIntro: '从环境声到配乐，拆解短片声音设计的基本方法。',
+    videoUrl: 'https://cdn.example.com/videos/short-film-sound-design.mp4',
+    videoCover: 'https://cdn.example.com/images/short-film-sound-design-cover.jpg',
+    ...auditDefaults,
+  },
+  {
+    id: 4,
+    videoTitle: '如何建立个人素材库',
+    videoIntro: '分享素材整理、备份与检索的实用工作流。',
+    videoUrl: 'https://cdn.example.com/videos/personal-asset-library.mp4',
+    videoCover: 'https://cdn.example.com/images/personal-asset-library-cover.jpg',
+    ...auditDefaults,
+  },
 ]
 
 export const materialMocks: MaterialLibraryItem[] = [
@@ -72,6 +88,24 @@ export const materialMocks: MaterialLibraryItem[] = [
     netdiskUrl: 'https://pan.example.com/materials/color-presets',
     ...auditDefaults,
   },
+  {
+    id: 3,
+    materialTitle: '旅行纪录片转场素材',
+    materialPhoto: 'https://cdn.example.com/images/travel-transitions.jpg',
+    materialIntro: '适合旅行记录与生活方式视频的转场素材。',
+    price: 29.9,
+    netdiskUrl: 'https://pan.example.com/materials/travel-transitions',
+    ...auditDefaults,
+  },
+  {
+    id: 4,
+    materialTitle: '创作者分镜模板包',
+    materialPhoto: 'https://cdn.example.com/images/storyboard-templates.jpg',
+    materialIntro: '帮助创作者快速梳理镜头、节奏与拍摄计划。',
+    price: 19.9,
+    netdiskUrl: 'https://pan.example.com/materials/storyboard-templates',
+    ...auditDefaults,
+  },
 ]
 
 export const matrixAccountMocks: MatrixAccount[] = [
@@ -89,6 +123,22 @@ export const matrixAccountMocks: MatrixAccount[] = [
     platformLogo: 'https://cdn.example.com/images/platform-xiaohongshu.png',
     accountUrl: 'https://www.xiaohongshu.com/user/profile/example',
     intro: '记录创作日常与电影灵感。',
+    ...auditDefaults,
+  },
+  {
+    id: 3,
+    platformName: '抖音',
+    platformLogo: 'https://cdn.example.com/images/platform-douyin.png',
+    accountUrl: 'https://www.douyin.com/user/example',
+    intro: '发布短视频创作技巧与幕后花絮。',
+    ...auditDefaults,
+  },
+  {
+    id: 4,
+    platformName: '微信公众号',
+    platformLogo: 'https://cdn.example.com/images/platform-wechat.png',
+    accountUrl: 'https://mp.weixin.qq.com/example',
+    intro: '沉淀长文、课程笔记与创作方法。',
     ...auditDefaults,
   },
 ]
@@ -110,6 +160,24 @@ export const courseMocks: Course[] = [
     courseIntro: '建立稳定的内容方法，完成从灵感到作品的转化。',
     coursePrice: 399,
     isOnline: true,
+    ...auditDefaults,
+  },
+  {
+    id: 3,
+    courseName: '电影感画面实战课',
+    courseTag: '专项课程',
+    courseIntro: '掌握构图、光线与色彩，让画面更有电影质感。',
+    coursePrice: 299,
+    isOnline: true,
+    ...auditDefaults,
+  },
+  {
+    id: 4,
+    courseName: '内容账号运营课',
+    courseTag: '运营课程',
+    courseIntro: '从定位、选题到发布，搭建可持续的内容账号。',
+    coursePrice: 499,
+    isOnline: false,
     ...auditDefaults,
   },
 ]

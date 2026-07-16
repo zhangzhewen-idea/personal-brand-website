@@ -69,7 +69,7 @@ describe('content mocks', () => {
   })
 
   it('exports Video-compatible videoMocks with frontend primitive types', () => {
-    expect(videoMocks.length).toBeGreaterThan(0)
+    expect(videoMocks.length).toBe(4)
 
     for (const video of videoMocks) {
       const typedVideo: Video = video
@@ -83,7 +83,7 @@ describe('content mocks', () => {
   })
 
   it('exports MaterialLibraryItem-compatible materialMocks', () => {
-    expect(materialMocks.length).toBeGreaterThan(0)
+    expect(materialMocks.length).toBe(4)
 
     for (const material of materialMocks) {
       const typedMaterial: MaterialLibraryItem = material
@@ -95,7 +95,7 @@ describe('content mocks', () => {
   })
 
   it('exports MatrixAccount-compatible matrixAccountMocks', () => {
-    expect(matrixAccountMocks.length).toBeGreaterThan(0)
+    expect(matrixAccountMocks.length).toBe(4)
 
     for (const account of matrixAccountMocks) {
       const typedAccount: MatrixAccount = account
@@ -107,7 +107,7 @@ describe('content mocks', () => {
   })
 
   it('exports Course-compatible courseMocks with boolean online status', () => {
-    expect(courseMocks.length).toBeGreaterThan(0)
+    expect(courseMocks.length).toBe(4)
 
     for (const course of courseMocks) {
       const typedCourse: Course = course
