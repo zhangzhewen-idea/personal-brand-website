@@ -9,7 +9,7 @@
         <el-table-column label="标签" min-width="200"><template #default="{ row }">{{ row.courseTag || '-' }}</template></el-table-column>
         <el-table-column label="简介" min-width="260"><template #default="{ row }">{{ row.courseIntro || '-' }}</template></el-table-column>
         <el-table-column label="课程价格" width="120"><template #default="{ row }">{{ formatCurrency(row.coursePrice) }}</template></el-table-column>
-        <el-table-column label="是否上架" width="110"><template #default="{ row }"><el-tag :type="row.isOnline ? 'success' : 'info'" effect="plain">{{ row.isOnline ? '已上架' : '未上架' }}</el-tag></template></el-table-column>
+        <el-table-column label="是否上架" width="110"><template #default="{ row }"><el-tag :type="row.isOnline ? 'success' : 'info'" effect="plain">{{ row.isOnline ? '已上线' : '未上线' }}</el-tag></template></el-table-column>
         <el-table-column label="在线状态" width="110"><template #default="{ row }">{{ row.isOnline ? '在线' : '离线' }}</template></el-table-column>
         <el-table-column label="状态" width="100"><template #default="{ row }"><StatusBadge :deleted="row.isDeleted" /></template></el-table-column>
         <el-table-column label="创建时间" min-width="170"><template #default="{ row }">{{ formatDateTime(row.createTime) }}</template></el-table-column>

@@ -55,7 +55,7 @@ describe('内容管理页面', () => {
     expect(wrapper.find('img[src="https://cdn.example.com/logos/douyin.png"]').exists()).toBe(true)
   })
 
-  it('课程页面展示课程字段、价格和上架状态', async () => {
+  it('课程页面展示课程字段、价格和上线状态', async () => {
     const wrapper = mount(CourseListView, mountOptions(createPinia()))
     await flushPromises()
 
@@ -64,7 +64,10 @@ describe('内容管理页面', () => {
     }
     expect(wrapper.text()).toContain('¥199.00')
     expect(wrapper.text()).toContain('电影解说入门课')
-    expect(wrapper.text()).toContain('已上架')
+    expect(wrapper.text()).toContain('已上线')
+    expect(wrapper.text()).toContain('未上线')
+    expect(wrapper.text()).not.toContain('已上架')
+    expect(wrapper.text()).not.toContain('未上架')
   })
 
   it.each([
