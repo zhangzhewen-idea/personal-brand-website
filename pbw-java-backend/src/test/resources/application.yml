@@ -1,0 +1,16 @@
+logging:
+  level:
+    root: WARN
+    org.testcontainers: INFO
+springdoc:
+  swagger-ui:
+    enabled: false
+pbw:
+  security:
+    jwt-secret: pbw-integration-test-secret-must-be-at-least-32-bytes
+    access-token-ttl: 2h
+    reset-token-ttl: 15m
+  storage:
+    public-base-url: http://localhost:8080/uploads
+  cors:
+    allowed-origins: http://localhost:5173
