@@ -30,7 +30,7 @@ const mapAuditFields = (dto: {
 
 const mapStringArray = (value: string | string[] | null): string[] => {
   if (Array.isArray(value)) {
-    return value
+    return value.every((item): item is string => typeof item === 'string') ? value : []
   }
 
   if (value === null) {
