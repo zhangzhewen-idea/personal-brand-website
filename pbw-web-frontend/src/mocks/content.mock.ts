@@ -16,7 +16,7 @@ const auditDefaults = {
 export const basicInfoMock: BasicInfo = {
   id: 1,
   homeCoverVideo: 'https://cdn.example.com/videos/home-cover.mp4',
-  contactEmail: 'hello@pbw.example.com',
+  contactEmail: 'business@example.com',
   contactQrCode: 'https://cdn.example.com/images/contact-qr-code.png',
   totalPlayCount: 10_000_000,
   totalLikeCount: 500_000,
