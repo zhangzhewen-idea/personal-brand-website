@@ -1,7 +1,0 @@
-export const auth = '/auth'
-export const basicInfo = '/basic-info'
-export const users = '/users'
-export const videos = '/videos'
-export const materials = '/materials'
-export const matrixAccounts = '/matrix-accounts'
-export const courses = '/courses'

@@ -1,5 +1,3 @@
 <template>
-  <div data-testid="app-shell">
-    <RouterView />
-  </div>
+  <RouterView />
 </template>

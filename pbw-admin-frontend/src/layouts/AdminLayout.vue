@@ -1,0 +1,529 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  ArrowDown,
+  Bell,
+  Collection,
+  DataAnalysis,
+  Expand,
+  Files,
+  Fold,
+  House,
+  Menu as MenuIcon,
+  Monitor,
+  Reading,
+  Search,
+  Share,
+  User,
+  VideoCamera,
+} from '@element-plus/icons-vue'
+import { useAuthStore } from '@/stores/auth'
+
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+const collapsed = ref(false)
+
+const currentTitle = computed(() => String(route.meta.title || '工作台'))
+
+const menuItems = [
+  { index: '/', label: '工作台', icon: DataAnalysis },
+  { index: '/basic-info', label: '基本信息', icon: Monitor },
+  { index: '/videos', label: '视频管理', icon: VideoCamera },
+  { index: '/materials', label: '素材库', icon: Files },
+  { index: '/matrix-accounts', label: '矩阵账号', icon: Share },
+  { index: '/courses', label: '课程管理', icon: Reading },
+  { index: '/users', label: '用户管理', icon: User },
+]
+
+const handleUserCommand = (command: string) => {
+  if (command === 'logout') {
+    authStore.logout()
+    router.replace('/login')
+  }
+}
+</script>
+
+<template>
+  <div class="admin-shell" :class="{ 'is-collapsed': collapsed }">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand__mark"><Collection /></div>
+        <div class="brand__text">
+          <strong>PBW STUDIO</strong>
+          <span>CONTENT ADMIN</span>
+        </div>
+      </div>
+
+      <div class="sidebar__section-label">工作空间</div>
+      <el-menu
+        router
+        :default-active="route.path"
+        :collapse="collapsed"
+        :collapse-transition="false"
+        class="sidebar-menu"
+      >
+        <el-menu-item v-for="item in menuItems" :key="item.index" :index="item.index">
+          <el-icon><component :is="item.icon" /></el-icon>
+          <template #title>{{ item.label }}</template>
+        </el-menu-item>
+      </el-menu>
+
+      <div class="sidebar__footer">
+        <div class="system-state">
+          <span class="system-state__dot"></span>
+          <div>
+            <strong>测试环境</strong>
+            <span>本地原型模式</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="main-shell">
+      <header class="topbar">
+        <div class="topbar__left">
+          <button class="collapse-button" type="button" @click="collapsed = !collapsed">
+            <el-icon><component :is="collapsed ? Expand : Fold" /></el-icon>
+          </button>
+          <div class="breadcrumb">
+            <el-icon><House /></el-icon>
+            <span>管理后台</span>
+            <span class="breadcrumb__slash">/</span>
+            <strong>{{ currentTitle }}</strong>
+          </div>
+        </div>
+
+        <div class="topbar__right">
+          <button class="topbar-search" type="button">
+            <el-icon><Search /></el-icon>
+            <span>搜索功能或页面</span>
+            <kbd>⌘ K</kbd>
+          </button>
+          <button class="icon-button" type="button" aria-label="通知">
+            <el-icon><Bell /></el-icon>
+            <span class="notification-dot"></span>
+          </button>
+          <span class="topbar-divider"></span>
+          <el-dropdown trigger="click" @command="handleUserCommand">
+            <button class="user-menu" type="button">
+              <span class="user-avatar">管</span>
+              <span class="user-copy">
+                <strong>{{ authStore.user?.nickname || '管理员' }}</strong>
+                <small>超级管理员</small>
+              </span>
+              <el-icon><ArrowDown /></el-icon>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item disabled>个人资料</el-dropdown-item>
+                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <RouterView />
+      </main>
+    </section>
+  </div>
+</template>
+
+<style scoped>
+.admin-shell {
+  min-height: 100vh;
+  background: var(--pbw-canvas);
+}
+
+.sidebar {
+  position: fixed;
+  z-index: 20;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  width: 232px;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0 14px;
+  background: #101827;
+  transition: width 0.2s ease;
+}
+
+.brand {
+  display: flex;
+  height: 78px;
+  align-items: center;
+  gap: 11px;
+  padding: 0 8px;
+}
+
+.brand__mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--pbw-blue);
+  color: white;
+  box-shadow: 0 7px 22px rgba(52, 111, 255, 0.3);
+}
+
+.brand__mark :deep(svg) {
+  width: 18px;
+}
+
+.brand__text {
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  white-space: nowrap;
+}
+
+.brand__text strong {
+  color: #f8fafc;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+}
+
+.brand__text span {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.sidebar__section-label {
+  margin: 18px 12px 9px;
+  color: #506078;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  white-space: nowrap;
+}
+
+.sidebar-menu {
+  border: 0;
+  background: transparent;
+}
+
+.sidebar-menu:not(.el-menu--collapse) {
+  width: 204px;
+}
+
+.sidebar-menu :deep(.el-menu-item) {
+  height: 46px;
+  margin: 3px 0;
+  border-radius: 9px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.sidebar-menu :deep(.el-menu-item .el-icon) {
+  font-size: 17px;
+}
+
+.sidebar-menu :deep(.el-menu-item:hover) {
+  background: #182338;
+  color: #dce6f5;
+}
+
+.sidebar-menu :deep(.el-menu-item.is-active) {
+  background: #1d3157;
+  color: #79a4ff;
+  font-weight: 650;
+}
+
+.sidebar__footer {
+  margin-top: auto;
+  padding: 18px 5px 22px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.system-state {
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  gap: 10px;
+  padding: 7px;
+  white-space: nowrap;
+}
+
+.system-state__dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1);
+}
+
+.system-state div {
+  display: flex;
+  flex-direction: column;
+}
+
+.system-state strong {
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.system-state span:last-child {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 10px;
+}
+
+.main-shell {
+  min-height: 100vh;
+  margin-left: 232px;
+  transition: margin-left 0.2s ease;
+}
+
+.topbar {
+  position: sticky;
+  z-index: 15;
+  top: 0;
+  display: flex;
+  height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--pbw-line);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+}
+
+.topbar__left,
+.topbar__right,
+.breadcrumb,
+.user-menu {
+  display: flex;
+  align-items: center;
+}
+
+.collapse-button,
+.icon-button,
+.user-menu,
+.topbar-search {
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.collapse-button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  margin-right: 14px;
+  place-items: center;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 18px;
+}
+
+.collapse-button:hover,
+.icon-button:hover {
+  background: #f1f5f9;
+  color: var(--pbw-ink);
+}
+
+.breadcrumb {
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.breadcrumb strong {
+  color: #39455a;
+  font-weight: 650;
+}
+
+.breadcrumb__slash {
+  color: #d1d8e2;
+}
+
+.topbar__right {
+  gap: 10px;
+}
+
+.topbar-search {
+  display: flex;
+  width: 222px;
+  height: 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  color: #94a3b8;
+  text-align: left;
+}
+
+.topbar-search span {
+  flex: 1;
+  font-size: 12px;
+}
+
+.topbar-search kbd {
+  padding: 2px 5px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background: #f8fafc;
+  color: #64748b;
+  font: inherit;
+  font-size: 10px;
+}
+
+.icon-button {
+  position: relative;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 9px;
+  color: #64748b;
+  font-size: 17px;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 5px;
+  height: 5px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #ef4444;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 4px;
+  background: var(--pbw-line);
+}
+
+.user-menu {
+  gap: 9px;
+  padding: 4px;
+  color: var(--pbw-ink);
+}
+
+.user-avatar {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: #e7efff;
+  color: var(--pbw-blue);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.user-copy {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.user-copy strong {
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.user-copy small {
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.workspace {
+  box-sizing: border-box;
+  padding: 28px;
+}
+
+.is-collapsed .sidebar {
+  width: 78px;
+}
+
+.is-collapsed .main-shell {
+  margin-left: 78px;
+}
+
+.is-collapsed .brand__text,
+.is-collapsed .sidebar__section-label,
+.is-collapsed .system-state div {
+  display: none;
+}
+
+.is-collapsed .brand {
+  justify-content: center;
+  padding: 0;
+}
+
+.is-collapsed .sidebar-menu {
+  width: 50px;
+}
+
+.is-collapsed .sidebar__footer {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 960px) {
+  .topbar-search {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .sidebar {
+    width: 78px;
+  }
+
+  .main-shell {
+    margin-left: 78px;
+  }
+
+  .brand__text,
+  .sidebar__section-label,
+  .system-state div,
+  .user-copy,
+  .user-menu > .el-icon {
+    display: none;
+  }
+
+  .brand {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .sidebar-menu {
+    width: 50px !important;
+  }
+
+  .sidebar-menu :deep(.el-menu-item span) {
+    display: none;
+  }
+
+  .workspace,
+  .topbar {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .breadcrumb > span:not(.breadcrumb__slash),
+  .breadcrumb > .el-icon,
+  .topbar-divider {
+    display: none;
+  }
+}
+</style>

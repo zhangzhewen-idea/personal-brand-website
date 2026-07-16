@@ -1,48 +1,80 @@
-import type { Pinia } from 'pinia'
-import { createRouter, createWebHistory, type RouterHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth.store'
-import AdminLayout from '@/components/layout/AdminLayout.vue'
+import { createRouter, createWebHistory } from 'vue-router'
+import AdminLayout from '@/layouts/AdminLayout.vue'
+import { useAuthStore } from '@/stores/auth'
 
-const lazy = (loader: () => Promise<unknown>) => loader
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/LoginView.vue'),
+      meta: { title: '管理员登录', public: true },
+    },
+    {
+      path: '/',
+      component: AdminLayout,
+      children: [
+        {
+          path: '',
+          name: 'dashboard',
+          component: () => import('@/views/DashboardView.vue'),
+          meta: { title: '工作台' },
+        },
+        {
+          path: 'basic-info',
+          name: 'basic-info',
+          component: () => import('@/views/management/BasicInfoView.vue'),
+          meta: { title: '基本信息管理' },
+        },
+        {
+          path: 'videos',
+          name: 'videos',
+          component: () => import('@/views/management/VideoManagementView.vue'),
+          meta: { title: '视频管理' },
+        },
+        {
+          path: 'materials',
+          name: 'materials',
+          component: () => import('@/views/management/MaterialManagementView.vue'),
+          meta: { title: '素材库管理' },
+        },
+        {
+          path: 'matrix-accounts',
+          name: 'matrix-accounts',
+          component: () => import('@/views/management/MatrixAccountView.vue'),
+          meta: { title: '矩阵账号管理' },
+        },
+        {
+          path: 'courses',
+          name: 'courses',
+          component: () => import('@/views/management/CourseManagementView.vue'),
+          meta: { title: '课程管理' },
+        },
+        {
+          path: 'users',
+          name: 'users',
+          component: () => import('@/views/management/UserManagementView.vue'),
+          meta: { title: '用户管理' },
+        },
+      ],
+    },
+    { path: '/:pathMatch(.*)*', redirect: '/' },
+  ],
+  scrollBehavior: () => ({ top: 0 }),
+})
 
-export function createAppRouter(pinia: Pinia, history: RouterHistory = createWebHistory()) {
-  const router = createRouter({
-    history,
-    routes: [
-      {
-        path: '/login',
-        name: 'login',
-        component: lazy(() => import('@/views/auth/LoginView.vue')),
-        meta: { title: '登录', guestOnly: true },
-      },
-      {
-        path: '/',
-        component: AdminLayout,
-        meta: { requiresAuth: true },
-        children: [
-          { path: '', redirect: '/dashboard' },
-          { path: 'dashboard', name: 'dashboard', component: lazy(() => import('@/views/dashboard/DashboardView.vue')), meta: { title: '首页', requiresAuth: true } },
-          { path: 'users', name: 'users', component: lazy(() => import('@/views/users/UserListView.vue')), meta: { title: '用户管理', requiresAuth: true } },
-          { path: 'content/basic-info', name: 'basic-info', component: lazy(() => import('@/views/content/BasicInfoView.vue')), meta: { title: '基本信息', requiresAuth: true } },
-          { path: 'content/videos', name: 'videos', component: lazy(() => import('@/views/VideoListView.vue')), meta: { title: '视频管理', requiresAuth: true } },
-          { path: 'content/materials', name: 'materials', component: lazy(() => import('@/views/MaterialListView.vue')), meta: { title: '素材管理', requiresAuth: true } },
-          { path: 'content/matrix-accounts', name: 'matrix-accounts', component: lazy(() => import('@/views/MatrixAccountListView.vue')), meta: { title: '矩阵账号', requiresAuth: true } },
-          { path: 'content/courses', name: 'courses', component: lazy(() => import('@/views/CourseListView.vue')), meta: { title: '课程管理', requiresAuth: true } },
-        ],
-      },
-      { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
-    ],
-  })
+router.beforeEach((to) => {
+  const authStore = useAuthStore()
+  document.title = `${String(to.meta.title || '管理后台')} - PBW`
 
-  router.beforeEach((to) => {
-    const authStore = useAuthStore(pinia)
-    if (to.meta.requiresAuth && !authStore.isAuthenticated) return { name: 'login' }
-    if (to.meta.guestOnly && authStore.isAuthenticated) return { name: 'dashboard' }
-    return true
-  })
+  if (!to.meta.public && !authStore.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
 
-  return router
-}
+  if (to.name === 'login' && authStore.isAuthenticated) {
+    return { name: 'dashboard' }
+  }
+})
 
-import pinia from '@/stores'
-export const router = createAppRouter(pinia)
+export default router
