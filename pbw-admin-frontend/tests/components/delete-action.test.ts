@@ -12,13 +12,14 @@ describe('DeleteAction', () => {
     vi.spyOn(ElMessageBox, 'confirm').mockResolvedValue('confirm' as never)
     vi.spyOn(ElMessage, 'success')
     const onDelete = vi.fn().mockResolvedValue(undefined)
-    const wrapper = mount(DeleteAction, { props: { onDelete } })
+    const wrapper = mount(DeleteAction, { props: { title: '1 · 管理员（admin）', buttonText: '删除', onDelete } })
 
     await wrapper.get('button').trigger('click')
     await vi.waitFor(() => expect(onDelete).toHaveBeenCalledTimes(1))
 
     expect(onDelete).toHaveBeenCalledOnce()
     expect(ElMessage.success).toHaveBeenCalledWith('删除成功')
+    expect(wrapper.get('button').text()).toBe('删除')
   })
 
   it('取消确认不调用删除回调', async () => {
@@ -49,13 +50,14 @@ describe('DeleteAction', () => {
   it('确认提示包含测试会话说明', async () => {
     const confirm = vi.spyOn(ElMessageBox, 'confirm').mockResolvedValue('confirm' as never)
     const title = '1 · 管理员（admin）'
-    const wrapper = mount(DeleteAction, { props: { title, onDelete: vi.fn() } })
+    const wrapper = mount(DeleteAction, { props: { title, buttonText: '删除', onDelete: vi.fn() } })
 
     await wrapper.get('button').trigger('click')
 
     expect(confirm).toHaveBeenCalledWith(expect.any(String), '确认删除', expect.any(Object))
     expect(confirm.mock.calls[0]?.[0]).toEqual(expect.stringContaining(title))
     expect(confirm.mock.calls[0]?.[0]).toEqual(expect.stringContaining('当前测试会话删除、刷新恢复'))
+    expect(wrapper.get('button').text()).toBe('删除')
   })
 
   it('确认阶段连续点击只发起一次确认和删除', async () => {

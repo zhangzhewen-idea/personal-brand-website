@@ -43,7 +43,7 @@
           <el-table-column label="操作" fixed="right" width="150">
             <template #default="{ row }">
               <el-button link type="primary">查看</el-button>
-              <DeleteAction :title="`${row.id} · ${row.nickname}（${row.account}）`" :loading="userStore.submittingId === row.id" :on-delete="() => userStore.remove(row.id)" />
+              <DeleteAction button-text="删除" :title="`${row.id} · ${row.nickname}（${row.account}）`" :loading="userStore.submittingId === row.id" :on-delete="() => userStore.remove(row.id)" />
             </template>
           </el-table-column>
         </el-table>

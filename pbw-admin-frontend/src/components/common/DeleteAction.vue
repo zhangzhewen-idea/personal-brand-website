@@ -1,5 +1,5 @@
 <template>
-  <el-button type="danger" link :loading="loading || confirming || submitting" @click="requestDelete">{{ title }}</el-button>
+  <el-button type="danger" link :loading="loading || confirming || submitting" @click="requestDelete">{{ buttonText }}</el-button>
 </template>
 
 <script setup lang="ts">
@@ -8,9 +8,10 @@ import { ref } from 'vue'
 
 const props = withDefaults(defineProps<{
   title?: string
+  buttonText?: string
   loading?: boolean
   onDelete: () => void | Promise<void>
-}>(), { title: '删除', loading: false })
+}>(), { title: '当前记录', buttonText: '删除', loading: false })
 const confirming = ref(false)
 const submitting = ref(false)
 
