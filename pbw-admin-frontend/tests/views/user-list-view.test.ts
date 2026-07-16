@@ -1,6 +1,8 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { createPinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { userService } from '@/services/entities'
+import { useUserStore } from '@/stores/entities'
 import UserListView from '@/views/users/UserListView.vue'
 
 afterEach(() => vi.restoreAllMocks())
@@ -10,9 +12,12 @@ describe('UserListView', () => {
     const wrapper = mount(UserListView, { global: { plugins: [createPinia()] } })
     await flushPromises()
 
+    expect(wrapper.text()).toContain('ID')
+    expect(wrapper.text()).toContain('1')
     expect(wrapper.text()).toContain('管理员')
     expect(wrapper.text()).toContain('admin')
     expect(wrapper.text()).toContain('admin@example.com')
+    expect(wrapper.find('img[src="https://cdn.example.com/avatars/admin.jpg"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('角色')
     expect(wrapper.text()).toContain('删除状态')
     expect(wrapper.text()).toContain('创建时间')
@@ -21,13 +26,45 @@ describe('UserListView', () => {
     expect(wrapper.text()).not.toContain('123456')
   })
 
-  it('为用户提供删除入口，并将删除交给 store.remove', async () => {
-    const wrapper = mount(UserListView, { global: { plugins: [createPinia()] } })
+  it('为用户提供删除入口，触发删除回调后调用对应 store.remove', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const userStore = useUserStore()
+    const remove = vi.spyOn(userStore, 'remove').mockResolvedValue(undefined)
+    const wrapper = mount(UserListView, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          DeleteAction: {
+            props: ['onDelete', 'loading'],
+            template: '<button data-testid="delete-action" @click="onDelete">删除</button>',
+          },
+        },
+      },
+    })
     await flushPromises()
 
-    const removeButtons = wrapper.findAll('button').filter((button) => button.text() === '删除')
-    expect(removeButtons.length).toBeGreaterThan(0)
+    await wrapper.get('[data-testid="delete-action"]').trigger('click')
+    await flushPromises()
+
+    expect(remove).toHaveBeenCalledWith(1)
     expect(wrapper.text()).toContain('新增用户')
     expect(wrapper.text()).toContain('查看')
+  })
+
+  it('异步加载时显示列表 loading 状态', async () => {
+    let resolveList!: (items: Awaited<ReturnType<typeof userService.list>>) => void
+    vi.spyOn(userService, 'list').mockReturnValue(new Promise((resolve) => { resolveList = resolve }))
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const userStore = useUserStore()
+    const wrapper = mount(UserListView, { global: { plugins: [pinia] } })
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.el-loading-mask').exists()).toBe(true)
+
+    resolveList([])
+    await flushPromises()
+    expect(userStore.loading).toBe(false)
   })
 })

@@ -10,6 +10,7 @@
       <ListToolbar placeholder="请输入昵称、账号或邮箱" @search="noop" @reset="noop" />
       <DataTableCard :loading="userStore.loading" :empty="!userStore.items.length" :total="userStore.items.length">
         <el-table :data="userStore.items" row-key="id" stripe>
+          <el-table-column prop="id" label="ID" width="80" />
           <el-table-column label="用户" min-width="220">
             <template #default="{ row }">
               <div class="user-cell">

@@ -63,4 +63,39 @@ describe('BasicInfoView', () => {
     expect(wrapper.text()).toContain('重试成功')
     expect(basicInfoService.get).toHaveBeenCalledTimes(2)
   })
+
+  it('异步加载时显示可见加载状态', async () => {
+    let resolveInfo!: Awaited<ReturnType<typeof basicInfoService.get>> extends infer T ? (info: T) => void : never
+    vi.spyOn(basicInfoService, 'get').mockReturnValue(new Promise((resolve) => { resolveInfo = resolve }))
+    const wrapper = mount(BasicInfoView, { global: { plugins: [createPinia()] } })
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.el-skeleton').exists()).toBe(true)
+
+    resolveInfo({
+      id: 1,
+      createTime: '2026-01-01T00:00:00.000Z',
+      updateTime: '2026-01-02T00:00:00.000Z',
+      isDeleted: false,
+      homeCoverVideo: null,
+      contactEmail: null,
+      contactQrCode: null,
+      totalPlayCount: 0,
+      totalLikeCount: 0,
+      totalFollowerCount: 0,
+      authorIdentityTag: null,
+      slogan: null,
+      creationAttitude: null,
+      authorPhoto: null,
+      editingDeskWorkPhoto: null,
+      assetLibraryScreenshot: null,
+      dailyMovieWatchingPhoto: null,
+      annualTop10Films: [],
+      influentialThreeDirectors: [],
+      contactInfo: null,
+    })
+    await flushPromises()
+
+    expect(wrapper.find('.el-skeleton').exists()).toBe(false)
+  })
 })
