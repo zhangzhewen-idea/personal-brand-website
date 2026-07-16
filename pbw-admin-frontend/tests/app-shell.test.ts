@@ -1,5 +1,4 @@
-import ElementPlus from 'element-plus'
-import { bootstrap, pinia, router } from '@/main'
+import { bootstrap, pinia, router } from '@/bootstrap'
 
 describe('App', () => {
   it('真实 bootstrap 安装路由、状态和 Element Plus', () => {
