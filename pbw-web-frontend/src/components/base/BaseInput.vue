@@ -39,7 +39,7 @@ const inputType = computed(() => props.type)
         :autocomplete="autocomplete"
         @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
       >
-      <span v-if="$slots.trailing" data-testid="input-trailing" class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"><slot name="trailing" /></span>
+      <span v-if="$slots.trailing" data-testid="input-trailing" class="absolute inset-y-0 right-0 flex items-center pr-3"><slot name="trailing" /></span>
     </div>
   </div>
 </template>
