@@ -40,6 +40,15 @@ describe('http', () => {
     expect(error.status).toBeUndefined()
   })
 
+  test('保留 Axios 错误 code 和原始错误上下文', () => {
+    const originalError = new AxiosError('timeout', 'ECONNABORTED')
+
+    const error = normalizeHttpError(originalError)
+
+    expect(error.code).toBe('ECONNABORTED')
+    expect(error.cause).toBe(originalError)
+  })
+
   test('统一实例使用 /api 和 10000ms 配置', () => {
     expect(http.defaults.baseURL).toBe('/api')
     expect(http.defaults.timeout).toBe(10000)

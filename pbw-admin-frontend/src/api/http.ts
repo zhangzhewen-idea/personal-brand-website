@@ -4,11 +4,13 @@ const UNKNOWN_HTTP_ERROR_MESSAGE = '网络请求失败，请稍后重试'
 
 export class HttpError extends Error {
   readonly status?: number
+  readonly code?: string
 
-  constructor(message: string, status?: number) {
-    super(message)
+  constructor(message: string, status?: number, code?: string, cause?: unknown) {
+    super(message, { cause })
     this.name = 'HttpError'
     this.status = status
+    this.code = code
   }
 }
 
@@ -26,7 +28,7 @@ export const normalizeHttpError = (error: unknown): HttpError => {
       ? error.response.data.message
       : UNKNOWN_HTTP_ERROR_MESSAGE
 
-    return new HttpError(message, status)
+    return new HttpError(message, status, error.code, error)
   }
 
   return new HttpError(UNKNOWN_HTTP_ERROR_MESSAGE)
