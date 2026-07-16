@@ -6,4 +6,7 @@ dist/            # 编译输出
 .env             # 环境变量（包含敏感信息）
 pbw-web-frontend/.idea
 pbw-web-frontend/node_modules
+pbw-web-frontend/dist
 pbw-admin-frontend/.idea
+pbw-admin-frontend/node_modules
+pbw-admin-frontend/dist
