@@ -6,7 +6,7 @@ import {
   mapUserDto,
   mapVideoDto,
 } from '@/api/mappers/entities.mapper'
-import type { BasicInfoDto } from '@/api/dto/entities.dto'
+import type { BasicInfoDto, UserDto } from '@/api/dto/entities.dto'
 
 const basicInfoDto: BasicInfoDto = {
   id: 1,
@@ -82,6 +82,44 @@ describe('entities mapper', () => {
     expect(mapBasicInfoWith({ influential_three_directors: invalidArray }).influentialThreeDirectors).toEqual([])
   })
 
+  it('uses zero for invalid or non-finite material and course prices', () => {
+    const invalidPrices: Array<number | string> = [
+      '',
+      'not-a-number',
+      'NaN',
+      'Infinity',
+      '-Infinity',
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+    ]
+
+    for (const price of invalidPrices) {
+      expect(mapMaterialDto({
+        id: 3,
+        material_title: '素材',
+        material_photo: null,
+        material_intro: null,
+        price,
+        netdisk_url: null,
+        create_time: 'c',
+        update_time: 'u',
+        is_deleted: 0,
+      }).price).toBe(0)
+
+      expect(mapCourseDto({
+        id: 5,
+        course_name: '课程',
+        course_tag: null,
+        course_intro: null,
+        course_price: price,
+        is_online: 0,
+        create_time: 'c',
+        update_time: 'u',
+        is_deleted: 0,
+      }).coursePrice).toBe(0)
+    }
+  })
+
   it('maps list DTOs and excludes user password from the domain model', () => {
     expect(mapVideoDto({
       id: 2,
@@ -143,7 +181,7 @@ describe('entities mapper', () => {
       is_deleted: 0,
     }).isOnline).toBe(false)
 
-    const user = mapUserDto({
+    const userDtoWithRuntimePassword: Omit<UserDto, 'password'> & { password: string } = {
       id: 6,
       nickname: '管理员',
       account: 'admin',
@@ -154,7 +192,8 @@ describe('entities mapper', () => {
       create_time: 'c',
       update_time: 'u',
       is_deleted: 0,
-    })
+    }
+    const user = mapUserDto(userDtoWithRuntimePassword)
 
     expect(user).toEqual({
       id: 6,

@@ -57,7 +57,6 @@ export interface CourseDto extends AuditDto {
 export interface UserDto extends AuditDto {
   nickname: string
   account: string
-  password?: string
   email: string | null
   avatar: string | null
   role: '用户' | '管理员'

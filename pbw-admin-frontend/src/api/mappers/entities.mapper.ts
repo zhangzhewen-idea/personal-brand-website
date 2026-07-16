@@ -47,6 +47,11 @@ const mapStringArray = (value: string | string[] | null): string[] => {
   }
 }
 
+const toFiniteNumber = (value: number | string): number => {
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) ? numberValue : 0
+}
+
 export const mapBasicInfoDto = (dto: BasicInfoDto): BasicInfo => ({
   ...mapAuditFields(dto),
   homeCoverVideo: dto.home_cover_video,
@@ -80,7 +85,7 @@ export const mapMaterialDto = (dto: MaterialDto): MaterialLibraryItem => ({
   materialTitle: dto.material_title,
   materialPhoto: dto.material_photo,
   materialIntro: dto.material_intro,
-  price: Number(dto.price),
+  price: toFiniteNumber(dto.price),
   netdiskUrl: dto.netdisk_url,
 })
 
@@ -97,7 +102,7 @@ export const mapCourseDto = (dto: CourseDto): Course => ({
   courseName: dto.course_name,
   courseTag: dto.course_tag,
   courseIntro: dto.course_intro,
-  coursePrice: Number(dto.course_price),
+  coursePrice: toFiniteNumber(dto.course_price),
   isOnline: dto.is_online === 1,
 })
 
