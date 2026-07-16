@@ -1,0 +1,79 @@
+<h2>数据模型与 mock/API 契约 · 修订版</h2>
+<p class="subtitle">六张表的页面字段保持一致；数据库字段转为驼峰，但敏感字段按前端安全边界拆分。</p>
+
+<div class="mockup">
+  <div class="mockup-header">database.sql → TypeScript 页面模型</div>
+  <div class="mockup-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;">
+      <div style="padding:16px;border-radius:14px;background:#eff6ff;border:1px solid #bfdbfe;">
+        <div class="label">basic_info</div><h3 style="margin:6px 0;">BasicInfo</h3>
+        <p style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.7;color:#334155;margin:0;">id, homeCoverVideo, contactEmail,<br>contactQrCode, totalPlayCount,<br>totalLikeCount, totalFollowerCount,<br>authorIdentityTag, slogan,<br>creationAttitude, authorPhoto,<br>editingDeskWorkPhoto,<br>assetLibraryScreenshot,<br>dailyMovieWatchingPhoto,<br>annualTop10Films: string[],<br>influentialThreeDirectors: string[],<br>contactInfo, createTime, updateTime,<br>isDeleted</p>
+      </div>
+      <div style="padding:16px;border-radius:14px;background:#f5f3ff;border:1px solid #ddd6fe;">
+        <div class="label">video</div><h3 style="margin:6px 0;">Video</h3>
+        <p style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.7;color:#334155;margin:0;">id, videoTitle, videoIntro,<br>videoUrl, videoCover,<br>createTime, updateTime, isDeleted</p>
+      </div>
+      <div style="padding:16px;border-radius:14px;background:#ecfdf5;border:1px solid #a7f3d0;">
+        <div class="label">material_library</div><h3 style="margin:6px 0;">MaterialLibraryItem</h3>
+        <p style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.7;color:#334155;margin:0;">id, materialTitle, materialPhoto,<br>materialIntro, price, netdiskUrl,<br>createTime, updateTime, isDeleted</p>
+      </div>
+      <div style="padding:16px;border-radius:14px;background:#fff7ed;border:1px solid #fed7aa;">
+        <div class="label">matrix_account</div><h3 style="margin:6px 0;">MatrixAccount</h3>
+        <p style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.7;color:#334155;margin:0;">id, platformName, platformLogo,<br>accountUrl, intro,<br>createTime, updateTime, isDeleted</p>
+      </div>
+      <div style="padding:16px;border-radius:14px;background:#fdf2f8;border:1px solid #fbcfe8;">
+        <div class="label">course</div><h3 style="margin:6px 0;">Course</h3>
+        <p style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.7;color:#334155;margin:0;">id, courseName, courseTag,<br>courseIntro, coursePrice, isOnline,<br>createTime, updateTime, isDeleted</p>
+      </div>
+      <div style="padding:16px;border-radius:14px;background:#f8fafc;border:1px solid #cbd5e1;">
+        <div class="label">users · 安全拆分</div><h3 style="margin:6px 0;">UserProfile</h3>
+        <p style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.7;color:#334155;margin:0;">id, nickname, account, email,<br>avatar, role, createTime,<br>updateTime, isDeleted<br><strong style="color:#b91c1c;">不包含 password</strong></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>users 表字段的安全映射</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+    <div style="padding:16px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;"><div class="label">登录输入</div><strong>LoginPayload</strong><p style="margin:7px 0 0;font-family:monospace;font-size:13px;">account, password</p></div>
+    <div style="padding:16px;border-radius:12px;background:#fef2f2;border:1px solid #fecaca;"><div class="label">注册输入</div><strong>RegisterPayload</strong><p style="margin:7px 0 0;font-family:monospace;font-size:13px;">nickname, account, email, password</p></div>
+    <div style="padding:16px;border-radius:12px;background:#ecfdf5;border:1px solid #a7f3d0;"><div class="label">用户资料</div><strong>UserProfile</strong><p style="margin:7px 0 0;font-size:13px;">只包含可展示字段，API 与 mock 均不得返回 password。</p></div>
+    <div style="padding:16px;border-radius:12px;background:#f8fafc;border:1px solid #cbd5e1;"><div class="label">本地表单状态</div><strong>confirmPassword</strong><p style="margin:7px 0 0;font-size:13px;">仅用于页面校验，不属于数据库字段或 API 用户实体。</p></div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>统一字段转换规则</h3>
+  <div style="overflow:auto;border:1px solid #e2e8f0;border-radius:12px;">
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      <thead><tr style="background:#f8fafc;text-align:left;"><th style="padding:12px;">数据库</th><th style="padding:12px;">前端</th><th style="padding:12px;">类型处理</th></tr></thead>
+      <tbody>
+        <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px;font-family:monospace;">snake_case</td><td style="padding:12px;font-family:monospace;">camelCase</td><td style="padding:12px;">所有 mock 对象采用驼峰命名</td></tr>
+        <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px;font-family:monospace;">annual_top_10_films</td><td style="padding:12px;font-family:monospace;">annualTop10Films</td><td style="padding:12px;">JSON 文本 → string[]</td></tr>
+        <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px;font-family:monospace;">price / course_price</td><td style="padding:12px;font-family:monospace;">price / coursePrice</td><td style="padding:12px;">DECIMAL → number，展示时统一格式化</td></tr>
+        <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px;font-family:monospace;">is_online / is_deleted</td><td style="padding:12px;font-family:monospace;">isOnline / isDeleted</td><td style="padding:12px;">TINYINT(1) → boolean</td></tr>
+        <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px;font-family:monospace;">create_time / update_time</td><td style="padding:12px;font-family:monospace;">createTime / updateTime</td><td style="padding:12px;">ISO 日期字符串</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">Mock 与真实 API 使用同一 Service 返回契约</div>
+  <div class="mockup-body">
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch;">
+      <div style="padding:18px;border-radius:14px;background:#fff7ed;border:2px solid #fb923c;"><div class="label">当前</div><h3 style="margin:6px 0;">Mock Service</h3><p style="margin:0;color:#475569;">异步返回驼峰对象；不模拟敏感用户数据，不执行真实登录。</p></div>
+      <div style="display:flex;align-items:center;font-size:24px;color:#64748b;">→</div>
+      <div style="padding:18px;border-radius:14px;background:#eff6ff;border:1px dashed #60a5fa;"><div class="label">未来</div><h3 style="margin:6px 0;">Axios API Module</h3><p style="margin:0;color:#475569;">api/http.ts 管理实例；api/modules 按实体拆分；字段差异仅在 api/mappers 标准化。</p></div>
+    </div>
+    <div style="margin-top:14px;padding:14px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;text-align:center;color:#334155;">Store 与页面始终消费同一组 TypeScript 模型，接入后端时不改组件接口。</div>
+  </div>
+</div>
+
+<div class="section"><h3>展示配置不污染实体</h3><p>课程时长、课时、特色、卡片颜色；视频平台和播放量；商业服务、合作流程、成长里程碑等放入 <strong>configs/</strong>。Service 负责组合页面 ViewModel。</p></div>
+
+<div class="options">
+  <div class="option" data-choice="data-v2-approved" onclick="toggleSelect(this)"><div class="letter">✓</div><div class="content"><h3>修订版正确</h3><p>继续确认视觉复刻与响应式验收标准。</p></div></div>
+  <div class="option" data-choice="data-v2-revise" onclick="toggleSelect(this)"><div class="letter">↺</div><div class="content"><h3>需要调整</h3><p>在对话中指出字段、类型或 API 边界问题。</p></div></div>
+</div>

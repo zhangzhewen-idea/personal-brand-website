@@ -1,0 +1,66 @@
+<h2>视觉复刻与响应式验收</h2>
+<p class="subtitle">以 ui-figma 为唯一视觉基准，不做风格重设计；下方是同一原型的桌面端与移动端实时预览。</p>
+
+<div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(300px,.6fr);gap:18px;align-items:start;">
+  <div class="mockup">
+    <div class="mockup-header">桌面端基准 · 1440 × 900</div>
+    <div class="mockup-body" style="padding:0;overflow:hidden;height:450px;background:#e2e8f0;">
+      <iframe src="http://127.0.0.1:5173/" title="ui-figma desktop" style="width:1440px;height:900px;border:0;transform:scale(.5);transform-origin:top left;background:#fff;"></iframe>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header">移动端基准 · 390 × 844</div>
+    <div class="mockup-body" style="padding:0;overflow:hidden;height:633px;width:293px;max-width:100%;margin:0 auto;background:#e2e8f0;">
+      <iframe src="http://127.0.0.1:5173/" title="ui-figma mobile" style="width:390px;height:844px;border:0;transform:scale(.75);transform-origin:top left;background:#fff;"></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>复刻范围</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;">
+    <div style="padding:14px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;"><strong>布局与间距</strong><p style="margin:6px 0 0;font-size:13px;color:#475569;">容器宽度、栅格列数、区块留白、导航高度、卡片比例全部按原型。</p></div>
+    <div style="padding:14px;border-radius:12px;background:#f5f3ff;border:1px solid #ddd6fe;"><strong>视觉样式</strong><p style="margin:6px 0 0;font-size:13px;color:#475569;">蓝紫粉渐变、灰阶、圆角、阴影、透明度、背景模糊和悬停效果保持一致。</p></div>
+    <div style="padding:14px;border-radius:12px;background:#ecfdf5;border:1px solid #a7f3d0;"><strong>排版与图标</strong><p style="margin:6px 0 0;font-size:13px;color:#475569;">原型未配置自定义字体，沿用系统无衬线字体；图标使用 lucide-vue-next 等价实现。</p></div>
+    <div style="padding:14px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;"><strong>图片与文案</strong><p style="margin:6px 0 0;font-size:13px;color:#475569;">保留原型有效图片与展示文案，并装入数据库语义对应的 mock 字段。</p></div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>响应式规则</h3>
+  <ul>
+    <li><strong>390px：</strong>单栏内容、移动菜单、首页统计保持三列、服务卡片纵向排列、登录页隐藏左侧品牌面板。</li>
+    <li><strong>768px 起：</strong>桌面导航出现，主要列表切换为双栏，关于页切换为双栏结构。</li>
+    <li><strong>1024px 起：</strong>素材与矩阵账号切换为四栏，登录页展示左右分屏。</li>
+    <li><strong>1440px：</strong>内容容器保持原型的 max-w-7xl，不因宽屏无限拉伸。</li>
+  </ul>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">验收矩阵</div>
+  <div class="mockup-body">
+    <div style="overflow:auto;border:1px solid #e2e8f0;border-radius:12px;">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead><tr style="background:#f8fafc;text-align:left;"><th style="padding:12px;">页面</th><th style="padding:12px;">桌面端</th><th style="padding:12px;">移动端</th><th style="padding:12px;">检查重点</th></tr></thead>
+        <tbody>
+          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px;">/</td><td style="padding:12px;">1440 × 900</td><td style="padding:12px;">390 × 844</td><td style="padding:12px;">全屏 Hero、统计、视频卡、素材、矩阵账号</td></tr>
+          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px;">/services</td><td style="padding:12px;">1440 × 900</td><td style="padding:12px;">390 × 844</td><td style="padding:12px;">课程渐变卡、上下线状态、CTA</td></tr>
+          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px;">/consulting</td><td style="padding:12px;">1440 × 900</td><td style="padding:12px;">390 × 844</td><td style="padding:12px;">服务卡、流程、案例占位</td></tr>
+          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px;">/about</td><td style="padding:12px;">1440 × 900</td><td style="padding:12px;">390 × 844</td><td style="padding:12px;">作者区、时间线、幕后图片、联系区</td></tr>
+          <tr style="border-top:1px solid #e2e8f0;"><td style="padding:12px;">/login</td><td style="padding:12px;">1440 × 900</td><td style="padding:12px;">390 × 844</td><td style="padding:12px;">左右分屏、页签、表单对齐</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin:14px 0 0;color:#475569;">验收采用同尺寸截图逐页对比。允许浏览器字体抗锯齿和亚像素舍入差异；不允许布局错位、颜色偏差、缺少区块、横向溢出或断点行为不一致。</p>
+  </div>
+</div>
+
+<div class="section">
+  <h3>页面功能边界</h3>
+  <p>保留导航、移动菜单、登录/注册页签、弹窗、密码显隐、悬停与滚动提示等展示交互；不执行真实登录注册、购买、下载、支付、表单提交或 API 请求。</p>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="visual-approved" onclick="toggleSelect(this)"><div class="letter">✓</div><div class="content"><h3>这一节正确</h3><p>继续确认状态、错误处理与测试设计。</p></div></div>
+  <div class="option" data-choice="visual-revise" onclick="toggleSelect(this)"><div class="letter">↺</div><div class="content"><h3>需要调整</h3><p>在对话中指出视觉基准、图片策略或验收范围问题。</p></div></div>
+</div>

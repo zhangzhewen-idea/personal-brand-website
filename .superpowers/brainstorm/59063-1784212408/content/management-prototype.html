@@ -1,0 +1,50 @@
+<style>
+  .admin-frame { margin-top:24px;border:1px solid #2d394c;border-radius:18px;overflow:hidden;background:#f4f6fa;color:#1d293d;box-shadow:0 22px 55px rgba(0,0,0,.25); }
+  .browser-bar { height:30px;background:#111827;display:flex;align-items:center;gap:6px;padding:0 13px; }.browser-bar i{width:7px;height:7px;border-radius:50%;background:#3d495c;}
+  .app { min-height:510px;display:grid;grid-template-columns:170px 1fr; }
+  .sidebar { background:#111827;color:#8e9aad;padding:18px 13px; }
+  .brand { color:white;font-size:13px;font-weight:800;padding:0 7px 18px;display:flex;align-items:center;gap:8px; }.brand b{width:27px;height:27px;border-radius:8px;background:#5b73f2;display:grid;place-items:center;font-size:10px;}
+  .nav-label { color:#536074;font-size:7px;letter-spacing:1px;margin:14px 8px 7px; }.nav-item{height:30px;border-radius:7px;display:flex;align-items:center;padding:0 9px;font-size:9px;margin-bottom:3px;}.nav-item.sub{padding-left:28px}.nav-item.active{background:#5b73f2;color:#fff;}
+  .main { min-width:0; }.topbar{height:50px;background:white;border-bottom:1px solid #e7ebf1;display:flex;justify-content:space-between;align-items:center;padding:0 18px;font-size:9px;color:#7a8698;}.avatar{width:24px;height:24px;border-radius:50%;background:#5b73f2;color:#fff;display:grid;place-items:center;font-weight:800;}
+  .workspace { padding:18px;position:relative; }.page-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;}.page-head h3{margin:0;font-size:17px}.page-head p{margin:3px 0 0;color:#8791a1;font-size:8px}.primary{background:#5b73f2;color:#fff;border-radius:7px;padding:8px 12px;font-size:8px;font-weight:800;}
+  .toolbar { background:#fff;border:1px solid #e7ebf1;border-radius:10px;padding:10px;display:flex;gap:8px;margin-bottom:10px; }.search,.select{height:30px;border:1px solid #dfe4eb;border-radius:7px;display:flex;align-items:center;padding:0 9px;color:#8b95a5;font-size:8px;}.search{width:210px}.select{width:110px}.query{height:30px;background:#25314a;color:#fff;border-radius:7px;display:grid;place-items:center;padding:0 13px;font-size:8px;}
+  .table-card { background:#fff;border:1px solid #e7ebf1;border-radius:10px;overflow:hidden; }.table-row{display:grid;grid-template-columns:42px 70px minmax(160px,1.6fr) minmax(180px,1.8fr) 90px 95px 96px;align-items:center;min-height:49px;border-bottom:1px solid #edf0f4;font-size:8px;padding:0 11px;gap:8px;}.table-row.header{min-height:36px;background:#f8f9fb;color:#647084;font-weight:800}.cover{width:52px;height:31px;border-radius:6px;background:linear-gradient(135deg,#24314a,#7186ef);position:relative;}.cover:after{content:'▶';position:absolute;inset:0;display:grid;place-items:center;color:white;font-size:8px}.title strong{display:block;font-size:9px}.title span{display:block;color:#8994a4;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}.url{color:#627089;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status{display:inline-flex;align-items:center;gap:4px;color:#238d68;background:#eaf8f3;padding:4px 7px;border-radius:999px;width:max-content}.status i{width:4px;height:4px;border-radius:50%;background:#26a97a}.actions{display:flex;gap:6px}.action{color:#5269df}.delete{color:#e14e5d}.pagination{height:43px;display:flex;justify-content:flex-end;align-items:center;padding:0 12px;color:#8490a0;font-size:8px;gap:7px}.page-dot{width:22px;height:22px;border-radius:6px;border:1px solid #e0e5eb;display:grid;place-items:center}.page-dot.active{background:#5b73f2;color:white;border-color:#5b73f2}
+  .modal-overlay { position:absolute;inset:0;background:rgba(12,19,31,.45);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(1px); }.modal{width:290px;background:#fff;border-radius:13px;box-shadow:0 18px 55px rgba(15,24,40,.25);padding:20px}.danger-icon{width:38px;height:38px;border-radius:10px;background:#fff0f1;color:#de4657;display:grid;place-items:center;font-size:18px;margin-bottom:12px}.modal h3{margin:0 0 6px;font-size:14px}.modal p{margin:0;color:#7c8798;line-height:1.55;font-size:9px}.target{margin-top:12px;padding:9px;border-radius:8px;background:#f7f8fa;font-size:9px;color:#344056}.modal-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:17px}.cancel,.confirm{padding:7px 12px;border-radius:7px;font-size:8px}.cancel{border:1px solid #dde2e8}.confirm{background:#df4657;color:white}
+  .mapping { margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }.mapping-card{border:1px solid #303b4e;border-radius:12px;background:#181d25;padding:13px}.mapping-card h3{margin:0 0 7px;color:#fff;font-size:13px}.mapping-card p{margin:0;color:#9ba5b4;font-size:11px;line-height:1.55}.mapping-card .mode{display:inline-block;margin-bottom:8px;padding:3px 7px;border-radius:999px;background:#252d3a;color:#8298ff;font-size:9px}
+  @media(max-width:950px){.app{grid-template-columns:64px 1fr}.sidebar{padding:16px 8px}.brand span,.nav-label,.nav-item{font-size:0}.brand{justify-content:center}.nav-item{justify-content:center;padding:0}.nav-item.sub{display:none}.table-row{min-width:850px}.table-card{overflow-x:auto}.mapping{grid-template-columns:1fr 1fr}}
+</style>
+
+<div class="label">DESIGN SECTION 2</div>
+<h2>数据管理页面与删除交互</h2>
+<p class="subtitle">列表页使用统一查询区、数据表与分页框架；不同业务只替换列配置和展示单元。删除是本阶段唯一的数据修改能力。</p>
+
+<section class="admin-frame">
+  <div class="browser-bar"><i></i><i></i><i></i></div>
+  <div class="app">
+    <aside class="sidebar"><div class="brand"><b>PB</b><span>PBW Admin</span></div><div class="nav-label">OVERVIEW</div><div class="nav-item">首页</div><div class="nav-label">MANAGEMENT</div><div class="nav-item">用户管理</div><div class="nav-item">内容管理</div><div class="nav-item sub">基本信息</div><div class="nav-item sub active">视频管理</div><div class="nav-item sub">素材管理</div><div class="nav-item sub">矩阵账号</div><div class="nav-item sub">课程管理</div></aside>
+    <main class="main">
+      <header class="topbar"><span>内容管理 / 视频管理</span><span class="avatar">管</span></header>
+      <div class="workspace">
+        <div class="page-head"><div><h3>视频管理</h3><p>维护个人品牌网站的视频内容与展示信息</p></div><span class="primary">＋ 新增视频</span></div>
+        <div class="toolbar"><div class="search">搜索视频标题</div><div class="select">全部状态⌄</div><div class="query">查询</div></div>
+        <div class="table-card">
+          <div class="table-row header"><span>ID</span><span>视频封面</span><span>视频标题 / 介绍</span><span>视频地址</span><span>状态</span><span>更新时间</span><span>操作</span></div>
+          <div class="table-row"><span>1</span><span class="cover"></span><span class="title"><strong>为什么这部电影能封神</strong><span>从叙事结构、镜头语言和人物动机三个角度拆解。</span></span><span class="url">cdn.example.com/videos/video-1.mp4</span><span class="status"><i></i>正常</span><span>2026-07-16</span><span class="actions"><b class="action">查看</b><b class="delete">删除</b></span></div>
+          <div class="table-row"><span>2</span><span class="cover" style="background:linear-gradient(135deg,#5a2943,#e17b87)"></span><span class="title"><strong>三分钟看懂角色弧光</strong><span>用一个完整案例讲清角色变化如何服务主题表达。</span></span><span class="url">cdn.example.com/videos/video-2.mp4</span><span class="status"><i></i>正常</span><span>2026-07-16</span><span class="actions"><b class="action">查看</b><b class="delete">删除</b></span></div>
+          <div class="table-row"><span>3</span><span class="cover" style="background:linear-gradient(135deg,#224d50,#66b8a9)"></span><span class="title"><strong>我最常用的剪辑节奏模板</strong><span>分享节奏控制、转场和音效搭配的常用方法。</span></span><span class="url">cdn.example.com/videos/video-3.mp4</span><span class="status"><i></i>正常</span><span>2026-07-16</span><span class="actions"><b class="action">查看</b><b class="delete">删除</b></span></div>
+          <div class="pagination"><span>共 3 条</span><span class="page-dot">‹</span><span class="page-dot active">1</span><span class="page-dot">›</span></div>
+        </div>
+        <div class="modal-overlay"><div class="modal"><div class="danger-icon">!</div><h3>确认删除这条视频？</h3><p>删除后当前测试会话中不再显示该记录，刷新页面后示例数据恢复。</p><div class="target">为什么这部电影能封神</div><div class="modal-actions"><span class="cancel">取消</span><span class="confirm">确认删除</span></div></div></div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<div class="mapping">
+  <div class="mapping-card"><span class="mode">单例表单</span><h3>基本信息</h3><p>按“品牌数据、作者资料、媒体资源、年度内容、联系方式”分组展示全部字段；只预留编辑界面，不删除。</p></div>
+  <div class="mapping-card"><span class="mode">列表 + 删除</span><h3>用户管理</h3><p>展示昵称、账号、邮箱、头像、角色和时间字段；密码不进入列表、详情或 mock 响应。</p></div>
+  <div class="mapping-card"><span class="mode">列表 + 删除</span><h3>视频管理</h3><p>展示 videoTitle、videoIntro、videoUrl、videoCover、createTime、updateTime、isDeleted。</p></div>
+  <div class="mapping-card"><span class="mode">列表 + 删除</span><h3>素材管理</h3><p>展示 materialTitle、materialPhoto、materialIntro、price、netdiskUrl 及审计字段。</p></div>
+  <div class="mapping-card"><span class="mode">列表 + 删除</span><h3>矩阵账号</h3><p>展示 platformName、platformLogo、accountUrl、intro 及审计字段。</p></div>
+  <div class="mapping-card"><span class="mode">列表 + 删除</span><h3>课程管理</h3><p>展示 courseName、courseTag、courseIntro、coursePrice、isOnline 及审计字段。</p></div>
+</div>

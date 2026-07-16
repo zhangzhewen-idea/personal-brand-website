@@ -1,0 +1,45 @@
+<style>
+  .flow-board { margin-top:24px;border:1px solid #303b4e;border-radius:18px;background:#11151c;padding:24px;box-shadow:0 20px 52px rgba(0,0,0,.24); }
+  .flow-title { display:flex;align-items:center;justify-content:space-between;margin-bottom:18px; }.flow-title strong{color:#fff;font-size:15px}.flow-title span{color:#738198;font-size:10px}
+  .layers { display:grid;grid-template-columns:1.1fr 44px 1fr 44px 1fr 44px 1.2fr;align-items:stretch; }
+  .layer { border:1px solid #2d3849;border-radius:13px;background:#181e27;padding:16px;min-height:160px; }
+  .layer.highlight { border-color:#536ce7;background:linear-gradient(160deg,#1b2332,#192039); }
+  .layer-tag { font-size:8px;letter-spacing:1px;color:#6f7f94;margin-bottom:8px; }.layer h3{color:#fff;margin:0 0 11px;font-size:13px}.layer ul{margin:0;padding:0;list-style:none}.layer li{color:#9da8b7;font-size:10px;margin:7px 0;padding-left:11px;position:relative}.layer li:before{content:'';position:absolute;left:0;top:5px;width:4px;height:4px;border-radius:50%;background:#5b73f2}.arrow{display:grid;place-items:center;color:#536ce7;font-size:21px;font-weight:300}.split-source{display:grid;grid-template-rows:1fr 1fr;gap:8px}.source{border-radius:9px;border:1px solid #2f3a4b;padding:10px}.source.current{background:#202a48;border-color:#4a62d7}.source b{display:block;color:#fff;font-size:10px;margin-bottom:4px}.source span{color:#929daf;font-size:9px;line-height:1.4}.current-badge{display:inline-block;color:#90a2ff!important;font-size:7px!important;margin-left:5px}
+  .sequence { margin-top:16px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px; }.step{background:#181e27;border:1px solid #2d3849;border-radius:10px;padding:11px;min-height:76px;position:relative}.step:not(:last-child):after{content:'›';position:absolute;right:-8px;top:26px;color:#5b73f2;font-size:19px;z-index:2}.step b{display:block;color:#fff;font-size:9px;margin-bottom:5px}.step span{color:#909bac;font-size:8px;line-height:1.45}.step.danger{border-color:#6c3842}.step.success{border-color:#2f6959}
+  .quality-grid { margin-top:17px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }.quality{border:1px solid #303b4e;border-radius:12px;background:#181d25;padding:14px}.quality h3{color:#fff;margin:0 0 8px;font-size:12px}.quality p{color:#9aa5b4;margin:0;font-size:10px;line-height:1.55}.quality code{color:#8ea0ff;font-size:9px}
+  .contracts { margin-top:16px;border:1px solid #303b4e;border-radius:12px;overflow:hidden;display:grid;grid-template-columns:repeat(4,1fr); }.contract{background:#181d25;padding:13px;border-right:1px solid #303b4e}.contract:last-child{border-right:0}.contract span{display:block;color:#718099;font-size:8px;margin-bottom:4px}.contract b{display:block;color:#fff;font-size:10px}.contract em{display:block;color:#96a1b0;font-style:normal;font-size:8px;margin-top:4px;line-height:1.4}
+  @media(max-width:1050px){.layers{grid-template-columns:1fr}.arrow{height:34px;transform:rotate(90deg)}.sequence{grid-template-columns:1fr 1fr}.step:after{display:none}.quality-grid{grid-template-columns:1fr}.contracts{grid-template-columns:1fr 1fr}.contract{border-bottom:1px solid #303b4e}}
+</style>
+
+<div class="label">DESIGN SECTION 3</div>
+<h2>分层架构、数据流与质量边界</h2>
+<p class="subtitle">页面不直接访问 axios 或 mock；Pinia 只处理页面状态，Service 负责业务编排，数据源可在 mock 与真实 API 之间替换。</p>
+
+<section class="flow-board">
+  <div class="flow-title"><strong>主数据流</strong><span>依赖只允许从左向右</span></div>
+  <div class="layers">
+    <div class="layer"><div class="layer-tag">PRESENTATION</div><h3>Views / Components</h3><ul><li>登录与管理页面</li><li>共享表格、查询栏</li><li>删除确认弹窗</li><li>响应式后台框架</li></ul></div>
+    <div class="arrow">→</div>
+    <div class="layer highlight"><div class="layer-tag">STATE</div><h3>Pinia Stores</h3><ul><li>认证会话与路由状态</li><li>列表数据与加载状态</li><li>删除后的即时同步</li><li>不包含 HTTP 细节</li></ul></div>
+    <div class="arrow">→</div>
+    <div class="layer"><div class="layer-tag">APPLICATION</div><h3>Services</h3><ul><li>登录与删除编排</li><li>字段默认值处理</li><li>统一返回领域模型</li><li>切换数据源的稳定边界</li></ul></div>
+    <div class="arrow">→</div>
+    <div class="layer"><div class="layer-tag">DATA SOURCE</div><h3>Repositories</h3><div class="split-source"><div class="source current"><b>Mock Repository <span class="current-badge">当前</span></b><span>异步内存数据，刷新恢复</span></div><div class="source"><b>API Modules</b><span>独立 api/ 目录，axios 请求</span></div></div></div>
+  </div>
+
+  <div class="flow-title" style="margin-top:24px"><strong>删除流程</strong><span>唯一真实数据修改能力</span></div>
+  <div class="sequence"><div class="step"><b>1. 点击删除</b><span>表格行传递实体 id 与标题</span></div><div class="step danger"><b>2. 二次确认</b><span>Element Plus 危险操作弹窗</span></div><div class="step"><b>3. Store 调用</b><span>设置 submitting 状态防重复</span></div><div class="step"><b>4. Service 删除</b><span>当前调用 mock，未来调用 API</span></div><div class="step"><b>5. 同步列表</b><span>从 Pinia 数据中移除记录</span></div><div class="step success"><b>6. 结果反馈</b><span>成功消息或可读错误提示</span></div></div>
+</section>
+
+<div class="contracts">
+  <div class="contract"><span>UI 字段</span><b>camelCase</b><em>videoTitle、coursePrice、isOnline</em></div>
+  <div class="contract"><span>SQL / API 输入</span><b>snake_case</b><em>由 mapper 转换，不污染页面</em></div>
+  <div class="contract"><span>认证保存</span><b>sessionStorage</b><em>仅保存测试 token 与安全用户资料</em></div>
+  <div class="contract"><span>HTTP 边界</span><b>src/api/</b><em>axios 实例、模块、DTO 与 mapper</em></div>
+</div>
+
+<div class="quality-grid">
+  <div class="quality"><h3>错误处理</h3><p>错误在 API/Mock 层标准化，Service 转为业务消息，Store 暴露 loading/error，页面使用 <code>ElMessage</code> 和空状态展示；失败时不修改本地列表。</p></div>
+  <div class="quality"><h3>测试策略</h3><p>使用 Vitest 与 Vue Test Utils 覆盖登录测试模式、路由守卫、字段映射、Pinia 删除流程、删除取消/确认，以及关键页面渲染。</p></div>
+  <div class="quality"><h3>完成验证</h3><p>执行单元测试、<code>vue-tsc</code>、Vite 构建和桌面/平板/手机视觉检查；确保控制台无错误，Element Plus 无布局溢出。</p></div>
+</div>

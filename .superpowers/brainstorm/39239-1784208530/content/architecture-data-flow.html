@@ -1,0 +1,70 @@
+<h2>工程分层与数据流</h2>
+<p class="subtitle">页面层只负责渲染；数据来源可以从 mock 平滑切换到真实 API。</p>
+
+<div class="mockup">
+  <div class="mockup-header">推荐架构：适度分层 + 可切换数据源</div>
+  <div class="mockup-body">
+    <div style="display:grid;gap:14px;max-width:920px;margin:0 auto;">
+      <div style="padding:18px;border-radius:14px;background:#eff6ff;border:1px solid #bfdbfe;">
+        <div class="label">展示层</div>
+        <h3 style="margin:6px 0;">pages / components / layouts</h3>
+        <p style="margin:0;color:#475569;">五类页面、公共导航与页脚、页面区块、基础 UI 组件。只消费 Store 状态，不关心数据来自 mock 还是后端。</p>
+      </div>
+      <div style="text-align:center;font-size:22px;color:#64748b;">↓</div>
+      <div style="padding:18px;border-radius:14px;background:#f5f3ff;border:1px solid #ddd6fe;">
+        <div class="label">状态层</div>
+        <h3 style="margin:6px 0;">stores</h3>
+        <p style="margin:0;color:#475569;">Pinia 按业务域保存基本信息、视频、素材、矩阵账号、课程与用户展示状态。</p>
+      </div>
+      <div style="text-align:center;font-size:22px;color:#64748b;">↓</div>
+      <div style="padding:18px;border-radius:14px;background:#ecfdf5;border:1px solid #a7f3d0;">
+        <div class="label">业务编排层</div>
+        <h3 style="margin:6px 0;">services</h3>
+        <p style="margin:0;color:#475569;">提供页面需要的查询方法，组合业务实体与静态展示配置，统一处理默认值和数据格式。</p>
+      </div>
+      <div style="text-align:center;font-size:22px;color:#64748b;">↓</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="padding:18px;border-radius:14px;background:#fff7ed;border:2px solid #fb923c;">
+          <div class="label">当前启用</div>
+          <h3 style="margin:6px 0;">mocks</h3>
+          <p style="margin:0;color:#475569;">驼峰字段，严格匹配 database.sql 对应实体；无需网络即可稳定展示。</p>
+        </div>
+        <div style="padding:18px;border-radius:14px;background:#f8fafc;border:1px dashed #94a3b8;">
+          <div class="label">未来切换</div>
+          <h3 style="margin:6px 0;">api</h3>
+          <p style="margin:0;color:#475569;">独立 axios client、业务请求模块与 DTO 映射；不放入 utils。</p>
+        </div>
+      </div>
+      <div style="padding:16px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;">
+        <div class="label">共享契约</div>
+        <p style="margin:6px 0 0;color:#334155;"><strong>types/models</strong> 定义数据库实体的驼峰类型；<strong>configs</strong> 存放原型额外的颜色、图标、文案和流程等展示信息。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>边界原则</h3>
+  <ul>
+    <li>组件不直接导入 mock，也不直接调用 axios。</li>
+    <li>数据库实体字段与展示配置分离，避免未来 API 模型被原型字段污染。</li>
+    <li>接入后端时仅替换 Service 使用的数据源，页面与 Store 接口保持稳定。</li>
+  </ul>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="architecture-approved" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>这一节正确</h3>
+      <p>继续确认页面结构与组件拆分。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="architecture-revise" onclick="toggleSelect(this)">
+    <div class="letter">↺</div>
+    <div class="content">
+      <h3>需要调整</h3>
+      <p>在对话中告诉我需要修改的层级或边界。</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,73 @@
+<h2>页面结构与组件拆分</h2>
+<p class="subtitle">保持 ui-figma 的五类页面和响应式布局，同时把可复用区块抽成职责单一的 Vue 组件。</p>
+
+<div class="mockup">
+  <div class="mockup-header">路由与布局</div>
+  <div class="mockup-body">
+    <div style="display:grid;grid-template-columns:minmax(220px,.75fr) minmax(0,2.25fr);gap:18px;align-items:start;">
+      <div style="padding:18px;border-radius:14px;background:#0f172a;color:#fff;position:sticky;top:16px;">
+        <div class="label" style="color:#93c5fd;">App Shell</div>
+        <h3 style="margin:8px 0;color:#fff;">SiteLayout</h3>
+        <p style="margin:0 0 12px;color:#cbd5e1;">Navigation</p>
+        <div style="padding:12px;border-radius:10px;background:#1e293b;color:#e2e8f0;text-align:center;">RouterView</div>
+        <p style="margin:12px 0 0;color:#cbd5e1;">Footer</p>
+        <div style="height:1px;background:#334155;margin:18px 0;"></div>
+        <div class="label" style="color:#f9a8d4;">Standalone</div>
+        <p style="margin:8px 0 0;color:#fff;"><strong>/login</strong><br><span style="color:#cbd5e1;">AuthLayout</span></p>
+      </div>
+
+      <div style="display:grid;gap:14px;">
+        <div style="padding:18px;border-radius:14px;background:#eff6ff;border:1px solid #bfdbfe;">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><h3 style="margin:0;">/ · HomePage</h3><span style="font-size:12px;padding:4px 8px;border-radius:999px;background:#dbeafe;color:#1d4ed8;">数据库 + 展示配置</span></div>
+          <p style="margin:10px 0 0;color:#475569;">VideoHero → VideoGallery → MaterialLibrary → MatrixAccounts</p>
+          <p style="margin:7px 0 0;font-size:13px;color:#64748b;">映射 basic_info、video、material_library、matrix_account。</p>
+        </div>
+
+        <div style="padding:18px;border-radius:14px;background:#f5f3ff;border:1px solid #ddd6fe;">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><h3 style="margin:0;">/services · ServicesPage</h3><span style="font-size:12px;padding:4px 8px;border-radius:999px;background:#ede9fe;color:#6d28d9;">数据库 + 展示配置</span></div>
+          <p style="margin:10px 0 0;color:#475569;">CourseHero → CourseGrid / CourseCard → CourseConsultDialog → CourseCTA</p>
+          <p style="margin:7px 0 0;font-size:13px;color:#64748b;">course 提供名称、标签、简介、价格、上线状态；时长、课时与特色属于展示配置。</p>
+        </div>
+
+        <div style="padding:18px;border-radius:14px;background:#fdf2f8;border:1px solid #fbcfe8;">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><h3 style="margin:0;">/consulting · ConsultingPage</h3><span style="font-size:12px;padding:4px 8px;border-radius:999px;background:#fce7f3;color:#be185d;">静态展示配置</span></div>
+          <p style="margin:10px 0 0;color:#475569;">ConsultingHero → ServiceGrid / ServiceCard → CooperationWorkflow → CaseStudies</p>
+          <p style="margin:7px 0 0;font-size:13px;color:#64748b;">数据库暂无商业服务表，当前全部内容放入 consulting 配置，不伪造 API 实体。</p>
+        </div>
+
+        <div style="padding:18px;border-radius:14px;background:#ecfdf5;border:1px solid #a7f3d0;">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><h3 style="margin:0;">/about · AboutPage</h3><span style="font-size:12px;padding:4px 8px;border-radius:999px;background:#d1fae5;color:#047857;">数据库 + 展示配置</span></div>
+          <p style="margin:10px 0 0;color:#475569;">AboutHero → CreatorStats → Milestones → BehindTheScenes → ContactSection</p>
+          <p style="margin:7px 0 0;font-size:13px;color:#64748b;">basic_info 提供作者资料、统计值、照片、影片与导演列表、联系方式；里程碑属于展示配置。</p>
+        </div>
+
+        <div style="padding:18px;border-radius:14px;background:#fff7ed;border:1px solid #fed7aa;">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><h3 style="margin:0;">/login · AuthPage</h3><span style="font-size:12px;padding:4px 8px;border-radius:999px;background:#ffedd5;color:#c2410c;">表单展示状态</span></div>
+          <p style="margin:10px 0 0;color:#475569;">BrandPanel → AuthTabs → LoginForm / RegisterForm</p>
+          <p style="margin:7px 0 0;font-size:13px;color:#64748b;">登录展示 account、password；注册展示 nickname、account、email、password，confirmPassword 仅为表单校验字段。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>共享组件边界</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;">
+    <div style="padding:14px;border:1px solid #e2e8f0;border-radius:12px;"><strong>layout</strong><br><span style="color:#64748b;font-size:13px;">Navigation、Footer、SiteLayout、AuthLayout</span></div>
+    <div style="padding:14px;border:1px solid #e2e8f0;border-radius:12px;"><strong>base</strong><br><span style="color:#64748b;font-size:13px;">BaseButton、BaseDialog、BaseTabs、BaseInput</span></div>
+    <div style="padding:14px;border:1px solid #e2e8f0;border-radius:12px;"><strong>shared</strong><br><span style="color:#64748b;font-size:13px;">ResponsiveImage、SectionHeading、StatItem</span></div>
+    <div style="padding:14px;border:1px solid #e2e8f0;border-radius:12px;"><strong>icons</strong><br><span style="color:#64748b;font-size:13px;">lucide-vue-next，替代 React 图标实现</span></div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="components-approved" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content"><h3>这一节正确</h3><p>继续确认数据模型与 mock/API 契约。</p></div>
+  </div>
+  <div class="option" data-choice="components-revise" onclick="toggleSelect(this)">
+    <div class="letter">↺</div>
+    <div class="content"><h3>需要调整</h3><p>在对话中指出页面或组件边界问题。</p></div>
+  </div>
+</div>

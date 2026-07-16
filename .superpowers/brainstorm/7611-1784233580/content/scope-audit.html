@@ -1,0 +1,26 @@
+<h2>当前工程已具备用户端页面</h2>
+<p class="subtitle">我发现 <code>pbw-web-frontend</code> 已存在 Vue 实现，且仓库近期提交记录显示页面集成验收已完成。请选择这次工作的范围。</p>
+
+<div class="options">
+  <div class="option" data-choice="audit" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>逐页验收并修正差异（推荐）</h3>
+      <p>运行原型与 Vue 页面，逐页比对首页、服务、咨询、关于、登录/注册及移动端，并仅修复确认的视觉或数据映射差异。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="rebuild" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>从现有实现重新搭建</h3>
+      <p>保留目录，重写组件与页面。成本和回归风险更高，只有当前代码不应复用时才建议选择。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="specific" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>只处理指定页面</h3>
+      <p>你指定页面或路径，我聚焦复刻与验证该部分。</p>
+    </div>
+  </div>
+</div>
