@@ -79,6 +79,25 @@ describe('auth service', () => {
       .rejects.toMatchObject({ code: 'TEST_USER_MISSING' })
   })
 
+  it('已删除管理员不能登录', async () => {
+    const service = createAuthService(createStorage(), [{ ...usersMock[0], isDeleted: true }])
+
+    await expect(service.login({ account: 'admin', password: '123456', testMode: true }))
+      .rejects.toMatchObject({ code: 'TEST_USER_MISSING' })
+  })
+
+  it('已删除管理员的 session 不能恢复并会被清理', () => {
+    const storage = createStorage()
+    storage.setItem('pbw-admin-session', JSON.stringify({
+      token: 'pbw-admin-test-token',
+      user: { ...usersMock[0], isDeleted: true },
+    }))
+    const service = createAuthService(storage)
+
+    expect(service.restore()).toBeNull()
+    expect(storage.getItem('pbw-admin-session')).toBeNull()
+  })
+
   it('非测试模式下报告 API 不可用', async () => {
     const service = createAuthService(createStorage())
 

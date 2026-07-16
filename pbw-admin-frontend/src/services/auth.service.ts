@@ -26,7 +26,7 @@ const isUserProfile = (value: unknown): value is RuntimeUser => {
     (user.role === '用户' || user.role === '管理员') &&
     typeof user.createTime === 'string' &&
     typeof user.updateTime === 'string' &&
-    typeof user.isDeleted === 'boolean' &&
+    user.isDeleted === false &&
     (user.email === null || typeof user.email === 'string') &&
     (user.avatar === null || typeof user.avatar === 'string')
   )
@@ -54,7 +54,7 @@ export const createAuthService = (storage: SessionStoragePort, source: readonly 
     if (!user) {
       throw new AppError('测试用户不存在', 'TEST_USER_MISSING')
     }
-    if (user.role !== '管理员') {
+    if (user.role !== '管理员' || user.isDeleted !== false) {
       throw new AppError('测试用户不是管理员', 'TEST_USER_MISSING')
     }
     if (payload.account !== 'admin' || payload.password !== '123456') {

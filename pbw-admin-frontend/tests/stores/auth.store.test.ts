@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { authService } from '@/services/auth.service'
 import { useAuthStore } from '@/stores/auth.store'
 
@@ -8,6 +8,8 @@ describe('auth store', () => {
     setActivePinia(createPinia())
     sessionStorage.clear()
   })
+
+  afterEach(() => vi.restoreAllMocks())
 
   it('登录后同步 token、用户和认证状态', async () => {
     const store = useAuthStore()
@@ -74,6 +76,5 @@ describe('auth store', () => {
     expect(store.error).toBeNull()
     expect(store.isAuthenticated).toBe(false)
 
-    logoutSpy.mockRestore()
   })
 })
