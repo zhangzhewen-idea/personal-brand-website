@@ -8,5 +8,5 @@ export interface SingletonRepository<T> {
 }
 
 export interface ResettableRepository {
-  reset(): void
+  reset(): Promise<void>
 }

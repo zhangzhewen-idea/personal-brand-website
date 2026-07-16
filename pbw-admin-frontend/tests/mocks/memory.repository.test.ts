@@ -45,10 +45,10 @@ describe('createMemoryRepository', () => {
     const repository = createMemoryRepository(seed)
 
     await repository.remove(1)
-    repository.reset()
+    await repository.reset()
     const result = await repository.list()
     result[0].tags.push('修改后的标签')
-    repository.reset()
+    await repository.reset()
 
     expect(await repository.list()).toEqual(seed)
   })

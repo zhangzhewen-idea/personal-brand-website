@@ -21,7 +21,7 @@ export const createMemoryRepository = <T extends { id: number }>(
       data.splice(index, 1)
     },
 
-    reset() {
+    async reset() {
       data = clone(initialData)
     },
   }
