@@ -143,7 +143,11 @@ const handleSubmit = async () => {
   display: grid;
   min-height: 100vh;
   grid-template-columns: minmax(480px, 1.08fr) minmax(520px, 0.92fr);
-  background: #f8fafc;
+  background:
+    radial-gradient(circle at 11% 18%, rgba(37, 99, 235, 0.32), transparent 31%),
+    radial-gradient(circle at 86% 12%, rgba(124, 58, 237, 0.3), transparent 29%),
+    radial-gradient(circle at 58% 88%, rgba(67, 56, 202, 0.27), transparent 36%),
+    #0f0c29;
 }
 
 .login-story {
@@ -154,7 +158,7 @@ const handleSubmit = async () => {
   flex-direction: column;
   box-sizing: border-box;
   padding: 42px 7vw 48px;
-  background: #101827;
+  background: rgba(9, 8, 29, 0.32);
   color: white;
 }
 
@@ -168,9 +172,7 @@ const handleSubmit = async () => {
 }
 
 .story-glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(8px);
+  display: none;
 }
 
 .story-glow--one {
@@ -323,6 +325,9 @@ const handleSubmit = async () => {
   place-items: center;
   box-sizing: border-box;
   padding: 48px 8vw;
+  border-left: 1px solid rgba(174, 165, 210, 0.12);
+  background: rgba(15, 12, 41, 0.34);
+  backdrop-filter: blur(18px);
 }
 
 .login-card {
@@ -338,7 +343,7 @@ const handleSubmit = async () => {
 
 .login-card__heading h2 {
   margin: 11px 0 7px;
-  color: var(--pbw-ink);
+  color: #f8f7ff;
   font-size: 31px;
   font-weight: 720;
   letter-spacing: -0.035em;
@@ -346,7 +351,7 @@ const handleSubmit = async () => {
 
 .login-card__heading p {
   margin: 0;
-  color: var(--pbw-muted);
+  color: #aaa6c4;
   font-size: 13px;
 }
 
@@ -407,7 +412,7 @@ const handleSubmit = async () => {
 
 .login-card :deep(.el-form-item__label) {
   padding-bottom: 7px;
-  color: #475569;
+  color: #d1cee2;
   font-size: 12px;
   font-weight: 650;
 }
@@ -455,7 +460,7 @@ const handleSubmit = async () => {
   justify-content: center;
   gap: 8px;
   margin-top: 18px;
-  color: #94a3b8;
+  color: #9d98b5;
   font-size: 11px;
 }
 
@@ -475,7 +480,7 @@ const handleSubmit = async () => {
 
 .login-footer {
   margin: 42px 0 0;
-  color: #b0bac8;
+  color: #716c8c;
   font-size: 10px;
   text-align: center;
 }

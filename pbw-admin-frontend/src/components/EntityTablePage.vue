@@ -1,9 +1,21 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Plus, Search, Refresh, Picture, Link, MoreFilled } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  Delete,
+  DocumentCopy,
+  Link,
+  MoreFilled,
+  Picture,
+  Plus,
+  Refresh,
+  RefreshLeft,
+  Search,
+} from '@element-plus/icons-vue'
+import EntityFormDialog from '@/components/EntityFormDialog.vue'
 import PageHeading from '@/components/PageHeading.vue'
-import type { EntityPageConfig, ManagementRecord } from '@/types/database'
+import type { EntityPageConfig, ManagementRecord, ProductSpecification } from '@/types/database'
+import { cloneData } from '@/utils/cloneData'
 
 const props = defineProps<{
   config: EntityPageConfig
@@ -12,13 +24,17 @@ const props = defineProps<{
 const keyword = ref('')
 const status = ref('all')
 const pageSize = ref(10)
+const rows = ref<ManagementRecord[]>(props.config.rows.map((row) => cloneData(row)))
+const dialogVisible = ref(false)
+const dialogMode = ref<'create' | 'edit' | 'view'>('create')
+const editingRecord = ref<ManagementRecord | null>(null)
 
 const getValue = (row: ManagementRecord, field: string) =>
   (row as unknown as Record<string, unknown>)[field]
 
 const filteredRows = computed(() => {
   const normalizedKeyword = keyword.value.trim().toLowerCase()
-  return props.config.rows.filter((row) => {
+  return rows.value.filter((row) => {
     const matchesKeyword =
       !normalizedKeyword ||
       props.config.searchFields.some((field) =>
@@ -41,7 +57,111 @@ const resetFilters = () => {
 }
 
 const prototypeNotice = () => {
-  ElMessage.info('当前为前端原型，业务操作将在后端接口接入后开放')
+  ElMessage.info('当前为前端原型，详情与更多操作将在后端接口接入后开放')
+}
+
+const getSpecifications = (value: unknown): ProductSpecification[] =>
+  Array.isArray(value) ? (value as ProductSpecification[]) : []
+
+const openCreateDialog = () => {
+  dialogMode.value = 'create'
+  editingRecord.value = null
+  dialogVisible.value = true
+}
+
+const openViewDialog = (row: ManagementRecord) => {
+  dialogMode.value = 'view'
+  editingRecord.value = cloneData(row)
+  dialogVisible.value = true
+}
+
+const openEditDialog = (row: ManagementRecord) => {
+  dialogMode.value = 'edit'
+  editingRecord.value = cloneData(row)
+  dialogVisible.value = true
+}
+
+const saveRecord = (record: ManagementRecord) => {
+  if (dialogMode.value === 'create') {
+    const nextId = Math.max(0, ...rows.value.map((item) => item.id)) + 1
+    rows.value.unshift({ ...record, id: nextId } as ManagementRecord)
+    ElMessage.success(`${props.config.createLabel}成功`)
+    return
+  }
+
+  const index = rows.value.findIndex((item) => item.id === record.id)
+  if (index >= 0) rows.value.splice(index, 1, record)
+  ElMessage.success('修改已保存')
+}
+
+const formatNow = () =>
+  new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
+
+const duplicateRecord = (row: ManagementRecord) => {
+  const nextId = Math.max(0, ...rows.value.map((item) => item.id)) + 1
+  const copied = cloneData(row)
+  const nameFields: Record<EntityPageConfig['key'], string> = {
+    video: 'videoTitle',
+    material: 'materialTitle',
+    matrix: 'platformName',
+    course: 'courseName',
+    user: 'nickname',
+  }
+  const nameField = nameFields[props.config.key]
+  const recordData = copied as unknown as Record<string, unknown>
+  recordData[nameField] = `${String(recordData[nameField] || '')}（副本）`
+
+  if (props.config.key === 'user') {
+    recordData.account = `${String(recordData.account || 'user')}_copy_${nextId}`
+    if (recordData.email) recordData.email = null
+  }
+
+  copied.id = nextId
+  copied.createTime = formatNow()
+  copied.updateTime = copied.createTime
+  copied.isDeleted = false
+  rows.value.unshift(copied)
+  ElMessage.success('记录已复制')
+}
+
+const toggleDeleted = async (row: ManagementRecord) => {
+  if (!row.isDeleted) {
+    try {
+      await ElMessageBox.confirm(
+        '该记录将标记为已删除，可通过状态筛选后恢复。',
+        '确认标记删除',
+        {
+          type: 'warning',
+          confirmButtonText: '确认删除',
+          cancelButtonText: '取消',
+        },
+      )
+    } catch {
+      return
+    }
+  }
+
+  const index = rows.value.findIndex((item) => item.id === row.id)
+  if (index < 0) return
+  rows.value.splice(index, 1, {
+    ...row,
+    isDeleted: !row.isDeleted,
+    updateTime: formatNow(),
+  } as ManagementRecord)
+  ElMessage.success(row.isDeleted ? '记录已恢复' : '记录已标记删除')
+}
+
+interface RowCommand {
+  action: 'duplicate' | 'toggleDeleted'
+  row: ManagementRecord
+}
+
+const handleRowCommand = (command: RowCommand) => {
+  if (command.action === 'duplicate') {
+    duplicateRecord(command.row)
+    return
+  }
+  void toggleDeleted(command.row)
 }
 
 const shortUrl = (value: unknown) => {
@@ -57,7 +177,7 @@ const shortUrl = (value: unknown) => {
       :title="config.title"
       :description="config.description"
     >
-      <el-button type="primary" :icon="Plus" @click="prototypeNotice">
+      <el-button type="primary" :icon="Plus" @click="openCreateDialog">
         {{ config.createLabel }}
       </el-button>
     </PageHeading>
@@ -94,15 +214,19 @@ const shortUrl = (value: unknown) => {
         >
           <template #default="{ row }">
             <div v-if="column.format === 'image'" class="media-cell">
-              <span class="media-cell__preview"><el-icon><Picture /></el-icon></span>
+              <span class="media-cell__preview" :class="{ 'is-empty': !getValue(row, column.field) }">
+                <el-icon><Picture /></el-icon>
+              </span>
               <el-tooltip :content="String(getValue(row, column.field) || '未设置')" placement="top">
-                <span class="media-cell__label">已配置</span>
+                <span class="media-cell__label">
+                  {{ getValue(row, column.field) ? '已配置' : '未配置' }}
+                </span>
               </el-tooltip>
             </div>
             <el-link
               v-else-if="column.format === 'url'"
               class="url-cell"
-              :underline="false"
+              underline="never"
               type="primary"
               @click="prototypeNotice"
             >
@@ -112,6 +236,17 @@ const shortUrl = (value: unknown) => {
             <span v-else-if="column.format === 'money'" class="money-cell">
               ¥ {{ Number(getValue(row, column.field)).toFixed(2) }}
             </span>
+            <div v-else-if="column.format === 'specifications'" class="specification-cell">
+              <el-tag
+                v-for="item in getSpecifications(getValue(row, column.field))"
+                :key="`${item.name}-${item.value}`"
+                effect="plain"
+                round
+              >
+                {{ item.name }}：{{ item.value }}
+              </el-tag>
+              <span v-if="!getSpecifications(getValue(row, column.field)).length">—</span>
+            </div>
             <el-tag
               v-else-if="column.format === 'boolean'"
               :type="getValue(row, column.field) ? 'info' : 'success'"
@@ -143,11 +278,27 @@ const shortUrl = (value: unknown) => {
           </template>
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="154">
-          <template #default>
+          <template #default="{ row }">
             <div class="row-actions">
-              <el-button link type="primary" @click="prototypeNotice">查看</el-button>
-              <el-button link type="primary" @click="prototypeNotice">编辑</el-button>
-              <el-button circle text :icon="MoreFilled" aria-label="更多操作" @click="prototypeNotice" />
+              <el-button link type="primary" @click="openViewDialog(row)">查看</el-button>
+              <el-button link type="primary" @click="openEditDialog(row)">编辑</el-button>
+              <el-dropdown trigger="click" @command="handleRowCommand">
+                <el-button circle text :icon="MoreFilled" aria-label="更多操作" />
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item :command="{ action: 'duplicate', row }" :icon="DocumentCopy">
+                      复制记录
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      divided
+                      :command="{ action: 'toggleDeleted', row }"
+                      :icon="row.isDeleted ? RefreshLeft : Delete"
+                    >
+                      {{ row.isDeleted ? '恢复记录' : '标记删除' }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
             </div>
           </template>
         </el-table-column>
@@ -163,6 +314,14 @@ const shortUrl = (value: unknown) => {
         />
       </div>
     </div>
+
+    <EntityFormDialog
+      v-model="dialogVisible"
+      :config="config"
+      :mode="dialogMode"
+      :record="editingRecord"
+      @submit="saveRecord"
+    />
   </section>
 </template>
 
@@ -226,6 +385,12 @@ const shortUrl = (value: unknown) => {
   font-size: 12px;
 }
 
+.media-cell__preview.is-empty {
+  border-style: dashed;
+  background: #f8fafc;
+  color: #b5beca;
+}
+
 .url-cell {
   display: inline-flex;
   max-width: 100%;
@@ -243,6 +408,12 @@ const shortUrl = (value: unknown) => {
   color: var(--pbw-ink);
   font-weight: 650;
   font-variant-numeric: tabular-nums;
+}
+
+.specification-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .password-cell {

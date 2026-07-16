@@ -184,7 +184,7 @@ const latestVideos = videos.slice(0, 3)
 
 .dashboard-heading h1 {
   margin: 8px 0 7px;
-  color: var(--pbw-ink);
+  color: #f8f7ff;
   font-size: 28px;
   font-weight: 720;
   letter-spacing: -0.03em;
@@ -192,7 +192,7 @@ const latestVideos = videos.slice(0, 3)
 
 .dashboard-heading p {
   margin: 0;
-  color: var(--pbw-muted);
+  color: #aaa6c4;
   font-size: 13px;
 }
 
@@ -214,7 +214,7 @@ const latestVideos = videos.slice(0, 3)
 }
 
 .dashboard-date > strong {
-  color: var(--pbw-ink);
+  color: #f8f7ff;
   font-size: 34px;
   line-height: 1;
   letter-spacing: -0.08em;
@@ -228,7 +228,7 @@ const latestVideos = videos.slice(0, 3)
 }
 
 .dashboard-date small {
-  color: #8995a7;
+  color: #aaa6c4;
   font-size: 10px;
   line-height: 1.55;
 }

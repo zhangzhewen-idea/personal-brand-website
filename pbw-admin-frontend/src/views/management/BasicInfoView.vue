@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   EditPen,
@@ -6,25 +7,46 @@ import {
   Link,
   Message,
   Picture,
+  Plus,
   Pointer,
   User,
   VideoPlay,
   View,
 } from '@element-plus/icons-vue'
+import BasicInfoDialog from '@/components/BasicInfoDialog.vue'
 import PageHeading from '@/components/PageHeading.vue'
-import { basicInfo } from '@/data/mockData'
+import { basicInfo as initialBasicInfo } from '@/data/mockData'
+import type { BasicInfo } from '@/types/database'
+import { cloneData } from '@/utils/cloneData'
 
 const formatNumber = (value: number) => new Intl.NumberFormat('zh-CN').format(value)
-const prototypeNotice = () => ElMessage.info('当前为前端原型，编辑功能将在后端接口接入后开放')
+const basicInfo = ref<BasicInfo>(cloneData(initialBasicInfo))
+const dialogVisible = ref(false)
+const dialogMode = ref<'create' | 'edit'>('edit')
+const dialogRecord = ref<BasicInfo | null>(null)
 
-const mediaFields = [
-  { label: '首页封面视频', field: 'homeCoverVideo', value: basicInfo.homeCoverVideo, icon: VideoPlay, kind: 'VIDEO' },
-  { label: '联系二维码', field: 'contactQrCode', value: basicInfo.contactQrCode, icon: Picture, kind: 'IMAGE' },
-  { label: '作者照片', field: 'authorPhoto', value: basicInfo.authorPhoto, icon: User, kind: 'IMAGE' },
-  { label: '剪辑台工作照', field: 'editingDeskWorkPhoto', value: basicInfo.editingDeskWorkPhoto, icon: Film, kind: 'IMAGE' },
-  { label: '素材库截图', field: 'assetLibraryScreenshot', value: basicInfo.assetLibraryScreenshot, icon: Picture, kind: 'IMAGE' },
-  { label: '观影日常照片', field: 'dailyMovieWatchingPhoto', value: basicInfo.dailyMovieWatchingPhoto, icon: Film, kind: 'IMAGE' },
-]
+const mediaFields = computed(() => [
+  { label: '首页封面视频', field: 'homeCoverVideo', value: basicInfo.value.homeCoverVideo, icon: VideoPlay, kind: 'VIDEO' },
+  { label: '联系二维码', field: 'contactQrCode', value: basicInfo.value.contactQrCode, icon: Picture, kind: 'IMAGE' },
+  { label: '作者照片', field: 'authorPhoto', value: basicInfo.value.authorPhoto, icon: User, kind: 'IMAGE' },
+  { label: '剪辑台工作照', field: 'editingDeskWorkPhoto', value: basicInfo.value.editingDeskWorkPhoto, icon: Film, kind: 'IMAGE' },
+  { label: '素材库截图', field: 'assetLibraryScreenshot', value: basicInfo.value.assetLibraryScreenshot, icon: Picture, kind: 'IMAGE' },
+  { label: '观影日常照片', field: 'dailyMovieWatchingPhoto', value: basicInfo.value.dailyMovieWatchingPhoto, icon: Film, kind: 'IMAGE' },
+])
+
+const openDialog = (mode: 'create' | 'edit') => {
+  dialogMode.value = mode
+  dialogRecord.value = mode === 'edit' ? cloneData(basicInfo.value) : null
+  dialogVisible.value = true
+}
+
+const saveBasicInfo = (record: BasicInfo) => {
+  basicInfo.value = {
+    ...record,
+    id: dialogMode.value === 'create' ? basicInfo.value.id + 1 : record.id,
+  }
+  ElMessage.success(dialogMode.value === 'create' ? '基本信息新增成功' : '基本信息已更新')
+}
 </script>
 
 <template>
@@ -34,22 +56,9 @@ const mediaFields = [
       title="基本信息管理"
       description="维护个人品牌介绍、核心数据、媒体素材与联系方式。"
     >
-      <el-button type="primary" :icon="EditPen" @click="prototypeNotice">编辑基本信息</el-button>
+      <el-button :icon="Plus" @click="openDialog('create')">新增基本信息</el-button>
+      <el-button type="primary" :icon="EditPen" @click="openDialog('edit')">编辑基本信息</el-button>
     </PageHeading>
-
-    <article class="profile-hero">
-      <div class="profile-hero__mesh"></div>
-      <div class="profile-hero__content">
-        <span class="profile-symbol"><Film /></span>
-        <div>
-          <span class="profile-label">CREATOR PROFILE · ID {{ basicInfo.id }}</span>
-          <h2>{{ basicInfo.slogan }}</h2>
-          <p>{{ basicInfo.authorIdentityTag }}</p>
-        </div>
-      </div>
-      <blockquote>“{{ basicInfo.creationAttitude }}”</blockquote>
-      <span class="record-state"><i></i> 数据状态：{{ basicInfo.isDeleted ? '已删除' : '正常' }}</span>
-    </article>
 
     <div class="metric-grid">
       <article class="panel metric-card">
@@ -129,114 +138,16 @@ const mediaFields = [
       </div>
     </article>
 
-    <article class="panel system-fields">
-      <div><span>记录 ID</span><strong>{{ basicInfo.id }}</strong><small>id</small></div>
-      <div><span>创建时间</span><strong>{{ basicInfo.createTime }}</strong><small>createTime</small></div>
-      <div><span>更新时间</span><strong>{{ basicInfo.updateTime }}</strong><small>updateTime</small></div>
-      <div><span>删除标记</span><strong>{{ basicInfo.isDeleted ? '1 · 已删除' : '0 · 正常' }}</strong><small>isDeleted</small></div>
-    </article>
+    <BasicInfoDialog
+      v-model="dialogVisible"
+      :mode="dialogMode"
+      :record="dialogRecord"
+      @submit="saveBasicInfo"
+    />
   </section>
 </template>
 
 <style scoped>
-.profile-hero {
-  position: relative;
-  display: flex;
-  overflow: hidden;
-  min-height: 170px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 28px;
-  box-sizing: border-box;
-  padding: 32px 36px;
-  border-radius: var(--pbw-radius);
-  background: #111b2d;
-  box-shadow: var(--pbw-shadow);
-  color: white;
-}
-
-.profile-hero__mesh {
-  position: absolute;
-  inset: 0;
-  opacity: .18;
-  background-image: linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: linear-gradient(to left, black, transparent 75%);
-}
-
-.profile-hero__content,
-.profile-hero blockquote,
-.record-state {
-  position: relative;
-  z-index: 2;
-}
-
-.profile-hero__content {
-  display: flex;
-  align-items: center;
-  gap: 19px;
-}
-
-.profile-symbol {
-  display: grid;
-  width: 66px;
-  height: 66px;
-  flex: none;
-  place-items: center;
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 17px;
-  background: rgba(255,255,255,.06);
-  color: #79a4ff;
-}
-
-.profile-symbol :deep(svg) { width: 27px; }
-
-.profile-label {
-  color: #6686bb;
-  font-size: 9px;
-  font-weight: 750;
-  letter-spacing: .16em;
-}
-
-.profile-hero h2 {
-  margin: 8px 0 5px;
-  font-size: 24px;
-  font-weight: 650;
-}
-
-.profile-hero p {
-  margin: 0;
-  color: #90a0b7;
-  font-size: 12px;
-}
-
-.profile-hero blockquote {
-  max-width: 330px;
-  margin: 0;
-  color: #aebbd0;
-  font-size: 14px;
-  font-weight: 350;
-  line-height: 1.75;
-}
-
-.record-state {
-  position: absolute;
-  right: 20px;
-  bottom: 17px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #687c9c;
-  font-size: 9px;
-}
-
-.record-state i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #34d399;
-}
-
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -341,30 +252,13 @@ const mediaFields = [
 .media-copy small { display: block; margin-top: 3px; color: #a7b1bf; font-size: 8px; }
 .media-copy p { overflow: hidden; margin: 9px 0 0; color: #8b96a6; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 
-.system-fields {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  margin-top: 16px;
-  padding: 18px 22px;
-}
-
-.system-fields div { display: flex; flex-direction: column; padding: 0 20px; border-right: 1px solid var(--pbw-line); }
-.system-fields div:first-child { padding-left: 0; }
-.system-fields div:last-child { border-right: 0; }
-.system-fields span { color: #8995a6; font-size: 9px; }
-.system-fields strong { margin: 6px 0 4px; color: #455165; font-size: 11px; font-weight: 650; }
-.system-fields small { color: #b0bac8; font-size: 8px; }
-
 @media (max-width: 1080px) {
-  .profile-hero blockquote { display: none; }
   .info-grid { grid-template-columns: 1fr; }
   .media-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 720px) {
-  .profile-hero { align-items: flex-start; padding: 25px; }
-  .metric-grid, .system-fields { grid-template-columns: 1fr; }
-  .system-fields div { padding: 13px 0; border-right: 0; border-bottom: 1px solid var(--pbw-line); }
+  .metric-grid { grid-template-columns: 1fr; }
   .media-grid { grid-template-columns: 1fr; }
   .detail-list > div { grid-template-columns: 1fr; gap: 9px; padding: 14px 0; }
 }

@@ -31,11 +31,18 @@ export interface Video extends BaseRecord {
   videoCover: string | null
 }
 
+export interface ProductSpecification {
+  name: string
+  value: string
+}
+
 export interface MaterialLibrary extends BaseRecord {
   materialTitle: string
   materialPhoto: string | null
   materialIntro: string | null
   price: number
+  stock: number
+  specifications: ProductSpecification[]
   netdiskUrl: string | null
 }
 
@@ -77,6 +84,7 @@ export type ColumnFormat =
   | 'online'
   | 'role'
   | 'password'
+  | 'specifications'
   | 'datetime'
 
 export interface EntityColumn {

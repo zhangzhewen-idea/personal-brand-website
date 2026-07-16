@@ -134,8 +134,14 @@ const handleUserCommand = (command: string) => {
 
 <style scoped>
 .admin-shell {
+  position: relative;
   min-height: 100vh;
-  background: var(--pbw-canvas);
+  background:
+    radial-gradient(circle at 10% 16%, rgba(37, 99, 235, 0.3), transparent 30%),
+    radial-gradient(circle at 86% 10%, rgba(124, 58, 237, 0.28), transparent 28%),
+    radial-gradient(circle at 60% 88%, rgba(67, 56, 202, 0.26), transparent 36%),
+    #0f0c29;
+  background-attachment: fixed;
 }
 
 .sidebar {
@@ -149,7 +155,9 @@ const handleUserCommand = (command: string) => {
   flex-direction: column;
   box-sizing: border-box;
   padding: 0 14px;
-  background: #101827;
+  border-right: 1px solid rgba(143, 126, 211, 0.12);
+  background: rgba(9, 8, 28, 0.88);
+  backdrop-filter: blur(18px);
   transition: width 0.2s ease;
 }
 
@@ -229,13 +237,13 @@ const handleUserCommand = (command: string) => {
 }
 
 .sidebar-menu :deep(.el-menu-item:hover) {
-  background: #182338;
+  background: rgba(75, 73, 140, 0.24);
   color: #dce6f5;
 }
 
 .sidebar-menu :deep(.el-menu-item.is-active) {
-  background: #1d3157;
-  color: #79a4ff;
+  background: linear-gradient(90deg, rgba(52, 111, 255, 0.28), rgba(124, 58, 237, 0.2));
+  color: #9cb7ff;
   font-weight: 650;
 }
 
@@ -280,6 +288,8 @@ const handleUserCommand = (command: string) => {
 }
 
 .main-shell {
+  position: relative;
+  z-index: 1;
   min-height: 100vh;
   margin-left: 232px;
   transition: margin-left 0.2s ease;
@@ -295,9 +305,9 @@ const handleUserCommand = (command: string) => {
   justify-content: space-between;
   box-sizing: border-box;
   padding: 0 28px;
-  border-bottom: 1px solid var(--pbw-line);
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(153, 139, 211, 0.14);
+  background: rgba(15, 12, 41, 0.74);
+  backdrop-filter: blur(18px);
 }
 
 .topbar__left,
@@ -324,29 +334,29 @@ const handleUserCommand = (command: string) => {
   margin-right: 14px;
   place-items: center;
   border-radius: 8px;
-  color: #64748b;
+  color: #aaa6c4;
   font-size: 18px;
 }
 
 .collapse-button:hover,
 .icon-button:hover {
-  background: #f1f5f9;
-  color: var(--pbw-ink);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8f7ff;
 }
 
 .breadcrumb {
   gap: 8px;
-  color: #94a3b8;
+  color: #8f8aa9;
   font-size: 12px;
 }
 
 .breadcrumb strong {
-  color: #39455a;
+  color: #e8e6f4;
   font-weight: 650;
 }
 
 .breadcrumb__slash {
-  color: #d1d8e2;
+  color: #5c5876;
 }
 
 .topbar__right {
@@ -360,9 +370,10 @@ const handleUserCommand = (command: string) => {
   align-items: center;
   gap: 8px;
   padding: 0 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(174, 165, 210, 0.18);
   border-radius: 9px;
-  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.045);
+  color: #918da9;
   text-align: left;
 }
 
@@ -373,10 +384,10 @@ const handleUserCommand = (command: string) => {
 
 .topbar-search kbd {
   padding: 2px 5px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(174, 165, 210, 0.2);
   border-radius: 4px;
-  background: #f8fafc;
-  color: #64748b;
+  background: rgba(255, 255, 255, 0.06);
+  color: #aaa6c4;
   font: inherit;
   font-size: 10px;
 }
@@ -388,7 +399,7 @@ const handleUserCommand = (command: string) => {
   height: 36px;
   place-items: center;
   border-radius: 9px;
-  color: #64748b;
+  color: #aaa6c4;
   font-size: 17px;
 }
 
@@ -398,7 +409,7 @@ const handleUserCommand = (command: string) => {
   right: 7px;
   width: 5px;
   height: 5px;
-  border: 2px solid white;
+  border: 2px solid #0f0c29;
   border-radius: 50%;
   background: #ef4444;
 }
@@ -407,13 +418,13 @@ const handleUserCommand = (command: string) => {
   width: 1px;
   height: 24px;
   margin: 0 4px;
-  background: var(--pbw-line);
+  background: rgba(174, 165, 210, 0.16);
 }
 
 .user-menu {
   gap: 9px;
   padding: 4px;
-  color: var(--pbw-ink);
+  color: #eceaf6;
 }
 
 .user-avatar {
@@ -422,8 +433,8 @@ const handleUserCommand = (command: string) => {
   height: 34px;
   place-items: center;
   border-radius: 9px;
-  background: #e7efff;
-  color: var(--pbw-blue);
+  background: linear-gradient(145deg, rgba(52, 111, 255, 0.34), rgba(124, 58, 237, 0.28));
+  color: #dce6ff;
   font-size: 13px;
   font-weight: 750;
 }
@@ -441,11 +452,12 @@ const handleUserCommand = (command: string) => {
 
 .user-copy small {
   margin-top: 2px;
-  color: #94a3b8;
+  color: #85809e;
   font-size: 10px;
 }
 
 .workspace {
+  min-height: calc(100vh - 68px);
   box-sizing: border-box;
   padding: 28px;
 }
