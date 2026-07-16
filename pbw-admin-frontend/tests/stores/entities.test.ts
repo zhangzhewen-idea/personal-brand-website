@@ -64,4 +64,16 @@ describe('entity stores', () => {
     expect(store.items).toHaveLength(2)
     await expect(repository.list()).resolves.toHaveLength(2)
   })
+
+  it('删除后 repository reset 并重新加载时，同 id 可以重新出现', async () => {
+    const store = useUserStore()
+
+    await store.load()
+    await store.remove(1)
+    await userRepository.reset()
+    await store.load()
+
+    expect(store.items).toHaveLength(3)
+    expect(store.items.some((item) => item.id === 1)).toBe(true)
+  })
 })

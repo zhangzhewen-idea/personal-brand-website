@@ -14,18 +14,28 @@ export const createEntityListStore = <T extends { id: number }>(
     const successMessage = ref<string | null>(null)
     let latestLoadId = 0
     let removeRequestVersion = 0
+    let completedRemovalVersion = 0
     const pendingRemovalIds = new Set<number>()
     const removedIds = new Set<number>()
+    const removedIdCompletionVersions = new Map<number, number>()
     const removalSnapshots = new Map<number, T[]>()
 
     const load = async () => {
       const loadId = ++latestLoadId
+      const completedRemovalVersionAtStart = completedRemovalVersion
       loading.value = true
       error.value = null
       successMessage.value = null
       try {
         const nextItems = await service.list()
         if (loadId === latestLoadId) {
+          for (const id of removedIds) {
+            const completionVersion = removedIdCompletionVersions.get(id)
+            if (completionVersion !== undefined && completionVersion <= completedRemovalVersionAtStart) {
+              removedIds.delete(id)
+              removedIdCompletionVersions.delete(id)
+            }
+          }
           items.value = nextItems.filter(
             (item) => !pendingRemovalIds.has(item.id) && !removedIds.has(item.id),
           )
@@ -50,6 +60,7 @@ export const createEntityListStore = <T extends { id: number }>(
       const requestVersion = ++removeRequestVersion
       removalSnapshots.set(id, items.value.slice())
       removedIds.delete(id)
+      removedIdCompletionVersions.delete(id)
       pendingRemovalIds.add(id)
       submittingId.value = id
       error.value = null
@@ -59,12 +70,14 @@ export const createEntityListStore = <T extends { id: number }>(
         pendingRemovalIds.delete(id)
         removalSnapshots.delete(id)
         removedIds.add(id)
+        removedIdCompletionVersions.set(id, ++completedRemovalVersion)
         items.value = items.value.filter((item) => item.id !== id)
         successMessage.value = '删除成功'
         error.value = null
       } catch (cause) {
         pendingRemovalIds.delete(id)
         removedIds.delete(id)
+        removedIdCompletionVersions.delete(id)
         const snapshot = removalSnapshots.get(id)
         removalSnapshots.delete(id)
         const snapshotItem = snapshot?.find((item) => item.id === id)
