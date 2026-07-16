@@ -29,6 +29,37 @@ describe('content services', () => {
     expect(content.materials[0]).toMatchObject({ id: 1, itemCount: 150, icon: 'scissors' })
     expect(content.matrixAccounts).toHaveLength(4)
     expect(content.matrixAccounts[0]).toMatchObject({ id: 1, displayName: '影像创作者' })
+
+    const deletedVideo = videoMocks.find((item) => item.id === 4)!
+    const deletedMaterial = materialMocks.find((item) => item.id === 4)!
+    const deletedMatrixAccount = matrixAccountMocks.find((item) => item.id === 4)!
+    const deletedCourse = courseMocks.find((item) => item.id === 4)!
+    const originalVideoIsDeleted = deletedVideo.isDeleted
+    const originalMaterialIsDeleted = deletedMaterial.isDeleted
+    const originalMatrixAccountIsDeleted = deletedMatrixAccount.isDeleted
+    const originalCourseIsDeleted = deletedCourse.isDeleted
+
+    deletedVideo.isDeleted = true
+    deletedMaterial.isDeleted = true
+    deletedMatrixAccount.isDeleted = true
+    deletedCourse.isDeleted = true
+
+    try {
+      const filteredHome = await getHomeContent()
+      const filteredCourses = await getCourses()
+
+      expect(filteredHome.videos.some((item) => item.id === deletedVideo.id)).toBe(false)
+      expect(filteredHome.materials.some((item) => item.id === deletedMaterial.id)).toBe(false)
+      expect(
+        filteredHome.matrixAccounts.some((item) => item.id === deletedMatrixAccount.id),
+      ).toBe(false)
+      expect(filteredCourses.some((item) => item.id === deletedCourse.id)).toBe(false)
+    } finally {
+      deletedVideo.isDeleted = originalVideoIsDeleted
+      deletedMaterial.isDeleted = originalMaterialIsDeleted
+      deletedMatrixAccount.isDeleted = originalMatrixAccountIsDeleted
+      deletedCourse.isDeleted = originalCourseIsDeleted
+    }
   })
 
   it('returns four active courses with course presentation fields merged by entity id', async () => {
@@ -61,10 +92,23 @@ describe('content services', () => {
     expect(second.matrixAccounts[0].displayName).toBe(matrixPresentation[1].displayName)
 
     const originalConfig = videoPresentation[4]
-    delete videoPresentation[4]
+    try {
+      delete videoPresentation[4]
 
-    await expect(getHomeContent()).rejects.toThrow('视频 4 缺少展示配置')
+      await expect(getHomeContent()).rejects.toThrow('视频 4 缺少展示配置')
+    } finally {
+      videoPresentation[4] = originalConfig
+    }
+  })
 
-    videoPresentation[4] = originalConfig
+  it('returns isolated course copies', async () => {
+    const firstCourses = await getCourses()
+    const originalFeature = firstCourses[0].features[0]
+
+    firstCourses[0].features[0] = '已修改'
+
+    const secondCourses = await getCourses()
+
+    expect(secondCourses[0].features[0]).toBe(originalFeature)
   })
 })
