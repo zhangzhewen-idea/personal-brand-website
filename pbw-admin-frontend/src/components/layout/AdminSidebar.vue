@@ -1,5 +1,5 @@
 <template>
-  <aside data-testid="admin-sidebar" class="admin-sidebar" :class="{ 'is-collapsed': collapsed }">
+  <aside data-testid="admin-sidebar" class="admin-sidebar" :class="{ 'is-collapsed': collapsed, 'is-mobile-drawer': mobileDrawer }">
     <div class="sidebar-brand"><span class="brand-mark">PBW</span><span v-if="!collapsed">后台管理</span></div>
     <el-menu :default-active="route.path" :collapse="collapsed" router class="sidebar-menu">
       <el-menu-item index="/dashboard"><el-icon><House /></el-icon><template #title>首页</template></el-menu-item>
@@ -12,14 +12,14 @@
         <el-menu-item index="/content/courses">课程管理</el-menu-item>
       </el-sub-menu>
     </el-menu>
-    <button data-testid="sidebar-collapse" class="collapse-button" type="button" @click="$emit('toggle')">{{ collapsed ? '›' : '‹' }}</button>
+    <button data-testid="sidebar-collapse" class="collapse-button" type="button" :aria-label="collapsed ? '展开侧栏' : '折叠侧栏'" @click="$emit('toggle')">{{ collapsed ? '›' : '‹' }}</button>
   </aside>
 </template>
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { Files, House, User } from '@element-plus/icons-vue'
-defineProps<{ collapsed: boolean }>()
+defineProps<{ collapsed: boolean; mobileDrawer?: boolean }>()
 defineEmits<{ toggle: [] }>()
 const route = useRoute()
 </script>
@@ -34,5 +34,5 @@ const route = useRoute()
 .sidebar-menu :deep(.el-menu-item.is-active) { color: #fff; background: #2b4768; }
 .sidebar-menu :deep(.el-menu-item:hover), .sidebar-menu :deep(.el-sub-menu__title:hover) { background: #223b59; }
 .collapse-button { position: absolute; right: -12px; bottom: 28px; z-index: 2; width: 24px; height: 24px; border: 1px solid #dce4ee; border-radius: 50%; color: #526e91; background: #fff; cursor: pointer; }
-@media (max-width: 760px) { .admin-sidebar { display: none; } }
+@media (max-width: 760px) { .admin-sidebar:not(.is-mobile-drawer) { display: none; } }
 </style>

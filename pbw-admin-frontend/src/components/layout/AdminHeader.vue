@@ -1,6 +1,6 @@
 <template>
   <header class="admin-header">
-    <div class="header-left"><el-button class="mobile-menu-button" text @click="$emit('menu')"><el-icon><Menu /></el-icon></el-button><el-breadcrumb separator="/" aria-label="页面位置"><el-breadcrumb-item v-for="item in breadcrumbs" :key="item.path">{{ item.title }}</el-breadcrumb-item></el-breadcrumb></div>
+    <div class="header-left"><el-button data-testid="mobile-menu-button" class="mobile-menu-button" aria-label="打开菜单" text @click="$emit('menu')"><el-icon><Menu /></el-icon></el-button><el-breadcrumb separator="/" aria-label="页面位置"><el-breadcrumb-item v-for="item in breadcrumbs" :key="item.path">{{ item.title }}</el-breadcrumb-item></el-breadcrumb></div>
     <div class="header-user"><span>管理员</span><el-button text @click="logout">退出登录</el-button></div>
   </header>
 </template>

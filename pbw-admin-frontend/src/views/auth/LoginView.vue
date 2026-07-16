@@ -23,7 +23,7 @@
             <el-input v-model="form.password" data-testid="password-input" type="password" show-password autocomplete="current-password" placeholder="请输入密码" />
           </el-form-item>
           <el-alert v-if="errorMessage" :title="errorMessage" type="error" :closable="false" show-icon class="login-error" />
-          <el-button native-type="button" type="primary" :loading="authStore.loading" data-testid="login-submit" class="login-submit" @click="submit">登录后台</el-button>
+          <el-button native-type="submit" type="primary" :loading="authStore.loading" data-testid="login-submit" class="login-submit">登录后台</el-button>
         </el-form>
       </div>
     </section>

@@ -41,4 +41,15 @@ describe('后台路由', () => {
     ]))
     expect(router.getRoutes().find((route) => route.path === '/users')?.meta.title).toBe('用户管理')
   })
+
+  it('根路径通过父路由 children 的空路径稳定进入仪表盘', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    await useAuthStore(pinia).login({ account: 'admin', password: '123456', testMode: true })
+    const router = createAppRouter(pinia)
+
+    await router.push('/')
+
+    expect(router.currentRoute.value.path).toBe('/dashboard')
+  })
 })

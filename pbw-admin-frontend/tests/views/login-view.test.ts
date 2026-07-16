@@ -1,6 +1,6 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import LoginView from '@/views/auth/LoginView.vue'
 import { createAppRouter } from '@/router'
 
@@ -26,20 +26,23 @@ describe('LoginView', () => {
   it('使用真实 pinia 登录成功后进入仪表盘', async () => {
     const { router, wrapper } = await mountView()
 
-    await wrapper.get('[data-testid="login-submit"]').trigger('click')
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(wrapper.get('[data-testid="login-submit"]').attributes('type')).toBe('submit')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
 
-    expect(router.currentRoute.value.path).toBe('/dashboard')
+    await vi.waitFor(() => expect(router.currentRoute.value.path).toBe('/dashboard'))
   })
 
   it('错误账号显示错误提示且不离开登录页', async () => {
     const { router, wrapper } = await mountView()
     await wrapper.get('[data-testid="password-input"]').setValue('wrong')
 
-    await wrapper.get('[data-testid="login-submit"]').trigger('click')
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
 
-    expect(router.currentRoute.value.path).toBe('/login')
-    expect(wrapper.text()).toContain('账号或密码错误')
+    await vi.waitFor(() => {
+      expect(router.currentRoute.value.path).toBe('/login')
+      expect(wrapper.text()).toContain('账号或密码错误')
+    })
   })
 })
