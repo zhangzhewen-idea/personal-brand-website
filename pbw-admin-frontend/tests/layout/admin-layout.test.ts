@@ -4,9 +4,10 @@ import { flushPromises } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { createAppRouter } from '@/router'
+import { useAuthStore } from '@/stores/auth.store'
 
 describe('AdminLayout', () => {
-  afterEach(() => { document.body.querySelector('.mobile-menu-drawer')?.remove() })
+  afterEach(() => { document.body.querySelector('.mobile-menu-drawer')?.remove(); sessionStorage.clear() })
 
   it('展示侧栏菜单、顶栏管理员信息和路由内容出口', async () => {
     const pinia = createPinia()
@@ -43,5 +44,28 @@ describe('AdminLayout', () => {
     await flushPromises()
 
     await vi.waitFor(() => expect(wrapper.find('.mobile-menu-drawer .admin-sidebar.is-mobile-drawer').exists()).toBe(true))
+  })
+
+  it('drawer 打开后导航到另一页面会自动关闭', async () => {
+    const pinia = createPinia()
+    await useAuthStore(pinia).login({ account: 'admin', password: '123456', testMode: true })
+    const router = createAppRouter(pinia)
+    await router.push('/dashboard')
+    const wrapper = mount(AdminLayout, { global: { plugins: [pinia, router] } })
+
+    await wrapper.get('[data-testid="mobile-menu-button"]').trigger('click')
+    await flushPromises()
+    await vi.waitFor(() => expect(wrapper.find('.mobile-menu-drawer .admin-sidebar.is-mobile-drawer').exists()).toBe(true))
+
+    const drawerSidebar = wrapper.find('.mobile-menu-drawer .admin-sidebar.is-mobile-drawer')
+    const usersItem = drawerSidebar.findAll('.el-menu-item').find((item) => item.text() === '用户管理')
+    expect(usersItem).toBeDefined()
+    await usersItem!.trigger('click')
+    await flushPromises()
+
+    await vi.waitFor(() => {
+      expect(router.currentRoute.value.path).toBe('/users')
+      expect(wrapper.find('.mobile-menu-drawer.open').exists()).toBe(false)
+    })
   })
 })

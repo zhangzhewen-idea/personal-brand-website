@@ -9,11 +9,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import AdminHeader from './AdminHeader.vue'
 import AdminSidebar from './AdminSidebar.vue'
 const collapsed = ref(false)
 const mobileMenuOpen = ref(false)
+const route = useRoute()
+
+watch(() => route.fullPath, () => {
+  mobileMenuOpen.value = false
+})
 </script>
 
 <style scoped>
