@@ -3,6 +3,7 @@ export type AppErrorCode =
   | 'API_UNAVAILABLE'
   | 'INVALID_CREDENTIALS'
   | 'TEST_USER_MISSING'
+  | 'SESSION_PERSIST_FAILED'
 
 export class AppError extends Error {
   readonly code: AppErrorCode

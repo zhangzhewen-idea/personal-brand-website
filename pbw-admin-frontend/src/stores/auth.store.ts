@@ -43,10 +43,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const logout = () => {
-    authService.logout()
-    token.value = null
-    user.value = null
-    error.value = null
+    try {
+      authService.logout()
+    } finally {
+      token.value = null
+      user.value = null
+      error.value = null
+    }
   }
 
   restoreSession()

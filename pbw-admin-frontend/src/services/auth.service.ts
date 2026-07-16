@@ -65,7 +65,16 @@ export const createAuthService = (storage: SessionStoragePort, source: readonly 
       token: TEST_AUTH_TOKEN,
       user: sanitizeUser(user),
     }
-    storage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session))
+    try {
+      storage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session))
+    } catch {
+      try {
+        storage.removeItem(AUTH_SESSION_STORAGE_KEY)
+      } catch {
+        // 存储不可用时不能留下可能过期的会话。
+      }
+      throw new AppError('会话持久化失败', 'SESSION_PERSIST_FAILED')
+    }
     return session
   },
 
@@ -77,7 +86,9 @@ export const createAuthService = (storage: SessionStoragePort, source: readonly 
       const parsed: unknown = JSON.parse(raw)
       if (!parsed || typeof parsed !== 'object') throw new Error('invalid session')
       const candidate = parsed as { token?: unknown; user?: unknown }
-      if (!isNonEmptyString(candidate.token) || !isUserProfile(candidate.user)) throw new Error('invalid session')
+      if (candidate.token !== TEST_AUTH_TOKEN || !isUserProfile(candidate.user) || candidate.user.role !== '管理员') {
+        throw new Error('invalid session')
+      }
 
       return { token: candidate.token, user: sanitizeUser(candidate.user) }
     } catch {

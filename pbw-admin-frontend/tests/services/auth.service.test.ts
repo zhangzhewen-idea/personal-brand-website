@@ -41,6 +41,8 @@ describe('auth service', () => {
 
   const invalidSessions: Array<[string, { token?: string; user?: Record<string, unknown> }]> = [
     ['空 token', { token: '  ' }],
+    ['篡改 token', { token: 'tampered-token' }],
+    ['普通用户', { user: { ...usersMock[1] } }],
     ['缺少 id', { user: { ...usersMock[0], id: undefined } }],
     ['空 account', { user: { ...usersMock[0], account: ' ' } }],
     ['空 nickname', { user: { ...usersMock[0], nickname: '' } }],
@@ -121,6 +123,25 @@ describe('auth service', () => {
     expect(() => service.restore()).not.toThrow()
     expect(service.restore()).toBeNull()
     expect(removed).toBe(true)
+  })
+
+  it('会话写入抛异常时登录失败且不会留下可恢复 session', async () => {
+    let removed = false
+    const storage = {
+      getItem: () => null,
+      setItem: () => {
+        throw new Error('storage unavailable')
+      },
+      removeItem: () => {
+        removed = true
+      },
+    }
+    const service = createAuthService(storage)
+
+    await expect(service.login({ account: 'admin', password: '123456', testMode: true }))
+      .rejects.toMatchObject({ code: 'SESSION_PERSIST_FAILED' })
+    expect(removed).toBe(true)
+    expect(service.restore()).toBeNull()
   })
 
   it('AppError 暴露稳定错误码', () => {

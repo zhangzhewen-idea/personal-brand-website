@@ -1,5 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { authService } from '@/services/auth.service'
 import { useAuthStore } from '@/stores/auth.store'
 
 describe('auth store', () => {
@@ -58,5 +59,21 @@ describe('auth store', () => {
     expect(store.token).toBeNull()
     expect(store.user).toBeNull()
     expect(store.isAuthenticated).toBe(false)
+  })
+
+  it('持久化退出抛错时仍清理内存状态', async () => {
+    const store = useAuthStore()
+    await store.login({ account: 'admin', password: '123456', testMode: true })
+    const logoutSpy = vi.spyOn(authService, 'logout').mockImplementation(() => {
+      throw new Error('storage unavailable')
+    })
+
+    expect(() => store.logout()).toThrow('storage unavailable')
+    expect(store.token).toBeNull()
+    expect(store.user).toBeNull()
+    expect(store.error).toBeNull()
+    expect(store.isAuthenticated).toBe(false)
+
+    logoutSpy.mockRestore()
   })
 })
