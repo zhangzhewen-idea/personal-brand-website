@@ -70,6 +70,13 @@ describe('auth service', () => {
       .rejects.toMatchObject({ code: 'INVALID_CREDENTIALS', message: '账号或密码错误' })
   })
 
+  it('测试用户不是管理员时报告 TEST_USER_MISSING', async () => {
+    const service = createAuthService(createStorage(), [{ ...usersMock[0], role: '用户' }])
+
+    await expect(service.login({ account: 'admin', password: '123456', testMode: true }))
+      .rejects.toMatchObject({ code: 'TEST_USER_MISSING' })
+  })
+
   it('非测试模式下报告 API 不可用', async () => {
     const service = createAuthService(createStorage())
 
@@ -95,6 +102,25 @@ describe('auth service', () => {
 
     expect(service.restore()).toBeNull()
     expect(storage.getItem('pbw-admin-session')).toBeNull()
+  })
+
+  it('存储读取抛异常时安全返回 null 并尝试清理', () => {
+    let removed = false
+    const storage = {
+      getItem: () => {
+        throw new Error('storage unavailable')
+      },
+      setItem: () => undefined,
+      removeItem: () => {
+        removed = true
+        throw new Error('storage unavailable')
+      },
+    }
+    const service = createAuthService(storage)
+
+    expect(() => service.restore()).not.toThrow()
+    expect(service.restore()).toBeNull()
+    expect(removed).toBe(true)
   })
 
   it('AppError 暴露稳定错误码', () => {

@@ -28,6 +28,11 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = session.user
       return session
     } catch (cause) {
+      try {
+        authService.logout()
+      } catch {
+        // 持久化清理失败时仍需清理内存认证状态。
+      }
       token.value = null
       user.value = null
       error.value = cause instanceof AppError ? cause : new AppError('登录失败')

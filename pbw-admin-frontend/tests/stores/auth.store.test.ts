@@ -33,6 +33,8 @@ describe('auth store', () => {
     expect(store.isAuthenticated).toBe(false)
     expect(store.token).toBeNull()
     expect(store.user).toBeNull()
+    expect(sessionStorage.getItem('pbw-admin-session')).toBeNull()
+    expect(store.restoreSession()).toBeNull()
   })
 
   it('初始化时恢复持久化会话', async () => {

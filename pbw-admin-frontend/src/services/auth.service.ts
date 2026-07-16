@@ -54,6 +54,9 @@ export const createAuthService = (storage: SessionStoragePort, source: readonly 
     if (!user) {
       throw new AppError('测试用户不存在', 'TEST_USER_MISSING')
     }
+    if (user.role !== '管理员') {
+      throw new AppError('测试用户不是管理员', 'TEST_USER_MISSING')
+    }
     if (payload.account !== 'admin' || payload.password !== '123456') {
       throw new AppError('账号或密码错误', 'INVALID_CREDENTIALS')
     }
@@ -67,10 +70,10 @@ export const createAuthService = (storage: SessionStoragePort, source: readonly 
   },
 
   restore(): AuthSession | null {
-    const raw = storage.getItem(AUTH_SESSION_STORAGE_KEY)
-    if (!raw) return null
-
     try {
+      const raw = storage.getItem(AUTH_SESSION_STORAGE_KEY)
+      if (!raw) return null
+
       const parsed: unknown = JSON.parse(raw)
       if (!parsed || typeof parsed !== 'object') throw new Error('invalid session')
       const candidate = parsed as { token?: unknown; user?: unknown }
@@ -78,7 +81,11 @@ export const createAuthService = (storage: SessionStoragePort, source: readonly 
 
       return { token: candidate.token, user: sanitizeUser(candidate.user) }
     } catch {
-      storage.removeItem(AUTH_SESSION_STORAGE_KEY)
+      try {
+        storage.removeItem(AUTH_SESSION_STORAGE_KEY)
+      } catch {
+        // 存储不可用时不能阻断应用启动。
+      }
       return null
     }
   },
