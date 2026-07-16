@@ -1,17 +1,18 @@
-import { mount } from '@vue/test-utils'
-import App from '@/App.vue'
+import ElementPlus from 'element-plus'
+import { bootstrap, pinia, router } from '@/main'
 
 describe('App', () => {
-  it('提供后台应用路由出口', () => {
-    const wrapper = mount(App, {
-      global: {
-        stubs: {
-          RouterView: { template: '<main data-testid="router-view" />' },
-        },
-      },
-    })
+  it('真实 bootstrap 安装路由、状态和 Element Plus', () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+    const app = bootstrap(root)
 
-    expect(wrapper.get('[data-testid="app-shell"]').exists()).toBe(true)
-    expect(wrapper.get('[data-testid="router-view"]').exists()).toBe(true)
+    expect(app.config.globalProperties.$router).toBe(router)
+    expect(app.config.globalProperties.$pinia).toBe(pinia)
+    expect(app.component('ElButton')).toBeDefined()
+    expect(root.querySelector('[data-testid="app-shell"]')).not.toBeNull()
+
+    app.unmount()
+    root.remove()
   })
 })
