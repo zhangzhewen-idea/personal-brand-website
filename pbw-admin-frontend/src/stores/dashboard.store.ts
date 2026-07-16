@@ -7,18 +7,27 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const summary = ref<DashboardSummary | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+  let latestRequestId = 0
 
   const load = async () => {
+    const requestId = ++latestRequestId
     loading.value = true
     error.value = null
     try {
-      summary.value = await dashboardService.getSummary()
-      return summary.value
+      const nextSummary = await dashboardService.getSummary()
+      if (requestId === latestRequestId) {
+        summary.value = nextSummary
+      }
+      return nextSummary
     } catch (cause) {
-      error.value = cause instanceof Error ? cause.message : '工作台数据加载失败'
-      throw cause
+      if (requestId === latestRequestId) {
+        error.value = cause instanceof Error ? cause.message : '工作台数据加载失败'
+      }
+      return undefined
     } finally {
-      loading.value = false
+      if (requestId === latestRequestId) {
+        loading.value = false
+      }
     }
   }
 

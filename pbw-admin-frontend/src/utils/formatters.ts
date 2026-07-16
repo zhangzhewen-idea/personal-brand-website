@@ -1,6 +1,7 @@
-export const formatCurrency = (value: number) => `¥${value.toFixed(2)}`
+export const formatCurrency = (value: number) => Number.isFinite(value) ? `¥${value.toFixed(2)}` : '¥0.00'
 
 export const formatCompactNumber = (value: number) => {
+  if (!Number.isFinite(value)) return '0'
   const absolute = Math.abs(value)
   if (absolute >= 10000) {
     const unit = absolute >= 100000000 ? '亿' : '万'

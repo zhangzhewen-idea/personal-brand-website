@@ -48,4 +48,18 @@ describe('dashboard service', () => {
       recentItems: [],
     })
   })
+
+  it('任一数据源失败时透传 Promise.all 的失败', async () => {
+    const failure = new Error('课程读取失败')
+    const service = createDashboardService({
+      userService: { list: async () => usersMock },
+      videoService: { list: async () => videosMock },
+      materialService: { list: async () => materialsMock },
+      matrixAccountService: { list: async () => matrixAccountsMock },
+      courseService: { list: async () => Promise.reject(failure) },
+      basicInfoService: { get: async () => basicInfoMock },
+    })
+
+    await expect(service.getSummary()).rejects.toBe(failure)
+  })
 })
