@@ -40,7 +40,7 @@ export const videoMocks: Video[] = [
     videoTitle: '如何用镜头记录日常灵感',
     videoIntro: '从选题、拍摄到剪辑，分享一支视频的完整创作过程。',
     videoUrl: 'https://cdn.example.com/videos/daily-inspiration.mp4',
-    videoCover: 'https://cdn.example.com/images/daily-inspiration-cover.jpg',
+    videoCover: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1200&q=80',
     ...auditDefaults,
   },
   {
@@ -48,7 +48,7 @@ export const videoMocks: Video[] = [
     videoTitle: '我的年度观影清单',
     videoIntro: '整理一年里最值得回看的电影与观看理由。',
     videoUrl: 'https://cdn.example.com/videos/annual-film-list.mp4',
-    videoCover: 'https://cdn.example.com/images/annual-film-list-cover.jpg',
+    videoCover: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80',
     ...auditDefaults,
   },
   {
@@ -56,7 +56,7 @@ export const videoMocks: Video[] = [
     videoTitle: '一支短片的声音设计',
     videoIntro: '从环境声到配乐，拆解短片声音设计的基本方法。',
     videoUrl: 'https://cdn.example.com/videos/short-film-sound-design.mp4',
-    videoCover: 'https://cdn.example.com/images/short-film-sound-design-cover.jpg',
+    videoCover: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1200&q=80',
     ...auditDefaults,
   },
   {
@@ -64,7 +64,7 @@ export const videoMocks: Video[] = [
     videoTitle: '如何建立个人素材库',
     videoIntro: '分享素材整理、备份与检索的实用工作流。',
     videoUrl: 'https://cdn.example.com/videos/personal-asset-library.mp4',
-    videoCover: 'https://cdn.example.com/images/personal-asset-library-cover.jpg',
+    videoCover: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
     ...auditDefaults,
   },
 ]
@@ -73,7 +73,7 @@ export const materialMocks: MaterialLibraryItem[] = [
   {
     id: 1,
     materialTitle: '影视剪辑音效素材包',
-    materialPhoto: 'https://cdn.example.com/images/sound-effects.jpg',
+    materialPhoto: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
     materialIntro: '适合短视频和影视混剪的常用音效合集。',
     price: 0,
     netdiskUrl: 'https://pan.example.com/materials/sound-effects',
@@ -82,7 +82,7 @@ export const materialMocks: MaterialLibraryItem[] = [
   {
     id: 2,
     materialTitle: '电影感调色预设合集',
-    materialPhoto: 'https://cdn.example.com/images/color-presets.jpg',
+    materialPhoto: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80',
     materialIntro: '覆盖室内、夜景和人像场景的调色预设。',
     price: 39.9,
     netdiskUrl: 'https://pan.example.com/materials/color-presets',
@@ -91,7 +91,7 @@ export const materialMocks: MaterialLibraryItem[] = [
   {
     id: 3,
     materialTitle: '旅行纪录片转场素材',
-    materialPhoto: 'https://cdn.example.com/images/travel-transitions.jpg',
+    materialPhoto: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=800&q=80',
     materialIntro: '适合旅行记录与生活方式视频的转场素材。',
     price: 29.9,
     netdiskUrl: 'https://pan.example.com/materials/travel-transitions',
@@ -100,7 +100,7 @@ export const materialMocks: MaterialLibraryItem[] = [
   {
     id: 4,
     materialTitle: '创作者分镜模板包',
-    materialPhoto: 'https://cdn.example.com/images/storyboard-templates.jpg',
+    materialPhoto: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80',
     materialIntro: '帮助创作者快速梳理镜头、节奏与拍摄计划。',
     price: 19.9,
     netdiskUrl: 'https://pan.example.com/materials/storyboard-templates',
@@ -112,7 +112,7 @@ export const matrixAccountMocks: MatrixAccount[] = [
   {
     id: 1,
     platformName: 'Bilibili',
-    platformLogo: 'https://cdn.example.com/images/platform-bilibili.png',
+    platformLogo: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=160&q=80',
     accountUrl: 'https://space.bilibili.com/example',
     intro: '分享影视创作、剪辑技巧与观影思考。',
     ...auditDefaults,
@@ -120,7 +120,7 @@ export const matrixAccountMocks: MatrixAccount[] = [
   {
     id: 2,
     platformName: '小红书',
-    platformLogo: 'https://cdn.example.com/images/platform-xiaohongshu.png',
+    platformLogo: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=160&q=80',
     accountUrl: 'https://www.xiaohongshu.com/user/profile/example',
     intro: '记录创作日常与电影灵感。',
     ...auditDefaults,
@@ -128,7 +128,7 @@ export const matrixAccountMocks: MatrixAccount[] = [
   {
     id: 3,
     platformName: '抖音',
-    platformLogo: 'https://cdn.example.com/images/platform-douyin.png',
+    platformLogo: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=160&q=80',
     accountUrl: 'https://www.douyin.com/user/example',
     intro: '发布短视频创作技巧与幕后花絮。',
     ...auditDefaults,
@@ -136,7 +136,7 @@ export const matrixAccountMocks: MatrixAccount[] = [
   {
     id: 4,
     platformName: '微信公众号',
-    platformLogo: 'https://cdn.example.com/images/platform-wechat.png',
+    platformLogo: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=160&q=80',
     accountUrl: 'https://mp.weixin.qq.com/example',
     intro: '沉淀长文、课程笔记与创作方法。',
     ...auditDefaults,
@@ -188,7 +188,7 @@ export const userProfileMocks: UserProfile[] = [
     nickname: 'PBW Creator',
     account: 'pbw_creator',
     email: 'creator@pbw.example.com',
-    avatar: 'https://cdn.example.com/images/avatar-creator.jpg',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=240&q=80',
     role: '用户',
     ...auditDefaults,
   },
