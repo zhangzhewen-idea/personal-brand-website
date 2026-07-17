@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --mode dev --port 3002",
+    "dev": "vite --mode dev --port 2002",
     "dev:prod": "vite --mode prod --port 3002",
     "build": "npm run build:prod",
     "build:dev": "vue-tsc -b && vite build --mode dev",
