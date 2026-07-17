@@ -11,7 +11,7 @@
 - `npm install`：安装对应前端模块依赖。
 - `npm run dev`：启动前端；管理端默认端口为 `3002`，其他模块使用 Vite 默认端口。
 - `npm run build`：执行 TypeScript 检查并构建 Vue 前端；`ui-figma` 仅执行 Vite 构建。
-- `npm test`：在 `pbw-web-frontend/` 中运行 Vitest 测试。
+- `npm test`：在任一前端子项目中运行该模块的 Vitest 测试。
 - `mvn spring-boot:run`：在 `pbw-java-backend/` 中以默认 `dev` Profile 启动后端。
 - `mvn test`：运行 JUnit、ArchUnit 与 Testcontainers 测试；集成测试要求 Docker 可用。
 
