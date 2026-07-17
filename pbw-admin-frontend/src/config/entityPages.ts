@@ -1,4 +1,3 @@
-import { courses, materials, matrixAccounts, users, videos } from '@/data/mockData'
 import type { EntityPageConfig } from '@/types/database'
 
 export const videoPageConfig: EntityPageConfig = {
@@ -9,7 +8,6 @@ export const videoPageConfig: EntityPageConfig = {
   createLabel: '新建视频',
   searchPlaceholder: '搜索视频标题或介绍',
   searchFields: ['videoTitle', 'videoIntro'],
-  rows: videos,
   columns: [
     { field: 'id', label: 'ID', width: 72 },
     { field: 'videoCover', label: '视频封面', width: 108, format: 'image' },
@@ -30,7 +28,6 @@ export const materialPageConfig: EntityPageConfig = {
   createLabel: '新建素材',
   searchPlaceholder: '搜索素材标题或介绍',
   searchFields: ['materialTitle', 'materialIntro'],
-  rows: materials,
   columns: [
     { field: 'id', label: 'ID', width: 72 },
     { field: 'materialPhoto', label: '素材照片', width: 108, format: 'image' },
@@ -54,7 +51,6 @@ export const matrixPageConfig: EntityPageConfig = {
   createLabel: '新建账号',
   searchPlaceholder: '搜索平台名称或简介',
   searchFields: ['platformName', 'intro'],
-  rows: matrixAccounts,
   columns: [
     { field: 'id', label: 'ID', width: 72 },
     { field: 'platformLogo', label: '平台 Logo', width: 108, format: 'image' },
@@ -75,7 +71,6 @@ export const coursePageConfig: EntityPageConfig = {
   createLabel: '新建课程',
   searchPlaceholder: '搜索课程名称或标签',
   searchFields: ['courseName', 'courseTag'],
-  rows: courses,
   columns: [
     { field: 'id', label: 'ID', width: 72 },
     { field: 'courseName', label: '课程名称', minWidth: 210 },
@@ -97,7 +92,6 @@ export const userPageConfig: EntityPageConfig = {
   createLabel: '新建用户',
   searchPlaceholder: '搜索昵称、账号或邮箱',
   searchFields: ['nickname', 'account', 'email'],
-  rows: users,
   columns: [
     { field: 'id', label: 'ID', width: 72 },
     { field: 'avatar', label: '头像', width: 92, format: 'image' },

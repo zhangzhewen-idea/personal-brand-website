@@ -37,9 +37,9 @@ const menuItems = [
   { index: '/users', label: '用户管理', icon: User },
 ]
 
-const handleUserCommand = (command: string) => {
+const handleUserCommand = async (command: string) => {
   if (command === 'logout') {
-    authStore.logout()
+    await authStore.logout()
     router.replace('/login')
   }
 }
@@ -74,8 +74,8 @@ const handleUserCommand = (command: string) => {
         <div class="system-state">
           <span class="system-state__dot"></span>
           <div>
-            <strong>测试环境</strong>
-            <span>本地原型模式</span>
+            <strong>本地环境</strong>
+            <span>后端服务 :8080</span>
           </div>
         </div>
       </div>
