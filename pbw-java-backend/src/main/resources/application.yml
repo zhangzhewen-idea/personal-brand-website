@@ -56,3 +56,10 @@ pbw:
 logging:
   pattern:
     level: "%5p [requestId:%X{requestId:-}]"
+  file:
+    name: log/main.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 1GB
