@@ -26,7 +26,38 @@ const accountOrEmail = ref('')
 const resetForm = reactive({ resetToken: '', newPassword: '', confirmPassword: '' })
 const formatCount = (count: number) => count >= 10_000 ? `${Math.floor(count / 10_000)}万+` : `${count}`
 const pageTitle = computed(() => ({ login: '欢迎回来', register: '创建账号', forgot: '找回密码', reset: '设置新密码' })[mode.value])
-const pageIntro = computed(() => ({ login: '登录你的账号继续创作', register: '加入我们，开启创作之旅', forgot: '输入账号或邮箱以接收重置邮件', reset: '请输入符合要求的新密码' })[mode.value])
+const pageIntro = computed(() => ({ login: '登录你的账号继续创作', register: '加入我们，开启创作之旅', forgot: '输入邮箱以接收重置邮件', reset: '请输入符合要求的新密码' })[mode.value])
+
+const requiredFieldNames: Record<string, string> = {
+  nickname: '请输入昵称',
+  account: '请输入账号',
+  email: '请输入邮箱',
+  password: '请输入密码',
+  confirmPassword: '请再次输入密码',
+  accountOrEmail: '请输入邮箱',
+  newPassword: '请输入新密码',
+  resetConfirmPassword: '请再次输入新密码',
+}
+
+const handleInvalid = (event: Event) => {
+  const input = event.target
+  if (!(input instanceof HTMLInputElement)) return
+
+  let message = '请检查此字段的输入'
+  if (input.validity.valueMissing) message = requiredFieldNames[input.name] || message
+  else if (input.name === 'account' && mode.value === 'register' && (input.validity.tooShort || input.validity.patternMismatch)) message = '账号须为 3-32 位，只能包含英文字母、数字和下划线，且必须以字母或数字开头'
+  else if ((input.name === 'email' || input.name === 'accountOrEmail') && input.validity.typeMismatch) message = '请输入有效邮箱地址，例如 name@example.com'
+  else if ((input.name === 'password' && mode.value === 'register') || input.name === 'newPassword') message = '密码须为 8-72 位，且至少包含一个字母和一个数字'
+  else if (input.validity.tooShort) message = `输入内容至少需要 ${input.minLength} 个字符`
+  else if (input.validity.tooLong) message = `输入内容不能超过 ${input.maxLength} 个字符`
+
+  input.setCustomValidity(message)
+}
+
+const clearFieldValidity = (event: Event) => {
+  const input = event.target
+  if (input instanceof HTMLInputElement) input.setCustomValidity('')
+}
 
 const switchMode = (next: Mode) => { mode.value = next; errorMessage.value = ''; successMessage.value = '' }
 const submit = async () => {
@@ -74,20 +105,20 @@ onMounted(() => {
     <section class="flex flex-1 items-center justify-center bg-gray-50 p-8"><div class="w-full max-w-md"><div class="mb-8 flex items-center justify-center gap-2 lg:hidden"><Video class="h-8 w-8 text-blue-600" /><span class="text-2xl font-bold">影像创作者</span></div>
       <div v-if="mode === 'login' || mode === 'register'" class="mb-8 grid grid-cols-2 rounded-lg bg-gray-200 p-1"><button class="rounded-md py-2 text-sm font-medium" :class="mode === 'login' ? 'bg-white shadow-sm' : 'text-gray-600'" @click="switchMode('login')">登录</button><button class="rounded-md py-2 text-sm font-medium" :class="mode === 'register' ? 'bg-white shadow-sm' : 'text-gray-600'" @click="switchMode('register')">注册</button></div>
       <div class="rounded-2xl bg-white p-8 shadow-xl"><div class="mb-6"><h2 class="mb-2 text-2xl font-bold">{{ pageTitle }}</h2><p class="text-gray-600">{{ pageIntro }}</p></div>
-        <form class="space-y-4" @submit.prevent="submit">
+        <form class="space-y-4" @submit.prevent="submit" @invalid.capture="handleInvalid" @input.capture="clearFieldValidity">
           <template v-if="mode === 'login' || mode === 'register'">
             <label v-if="mode === 'register'" class="block"><span class="font-medium">昵称</span><span class="relative mt-1 block"><User class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-model.trim="registerForm.nickname" name="nickname" required maxlength="50" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="你的昵称" /></span></label>
             <label class="block"><span class="font-medium">账号</span><span class="relative mt-1 block"><User class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-if="mode === 'login'" v-model.trim="loginForm.account" name="account" required maxlength="255" autocomplete="username" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入账号" /><input v-else v-model.trim="registerForm.account" name="account" required minlength="3" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9_]{2,31}" autocomplete="username" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入账号" /></span></label>
             <label v-if="mode === 'register'" class="block"><span class="font-medium">邮箱</span><span class="relative mt-1 block"><Mail class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-model.trim="registerForm.email" name="email" type="email" required maxlength="255" autocomplete="email" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="your@email.com" /></span></label>
-            <label class="block"><span class="font-medium">密码</span><span class="relative mt-1 block"><Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-if="mode === 'login'" v-model="loginForm.password" name="password" :type="showPassword ? 'text' : 'password'" required minlength="6" maxlength="72" autocomplete="current-password" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-10 outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" /><input v-else v-model="registerForm.password" name="password" :type="showPassword ? 'text' : 'password'" required minlength="8" maxlength="72" autocomplete="new-password" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-10 outline-none focus:ring-2 focus:ring-blue-500" placeholder="至少 8 位，包含字母和数字" /><button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" aria-label="显示密码" @click="showPassword = !showPassword"><EyeOff v-if="showPassword" class="h-5 w-5" /><Eye v-else class="h-5 w-5" /></button></span></label>
+            <label class="block"><span class="font-medium">密码</span><span class="relative mt-1 block"><Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-if="mode === 'login'" v-model="loginForm.password" name="password" :type="showPassword ? 'text' : 'password'" required minlength="6" maxlength="72" autocomplete="current-password" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-10 outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" /><input v-else v-model="registerForm.password" name="password" :type="showPassword ? 'text' : 'password'" required minlength="8" maxlength="72" pattern="(?=.*[A-Za-z])(?=.*[0-9]).{8,72}" autocomplete="new-password" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-10 outline-none focus:ring-2 focus:ring-blue-500" placeholder="至少 8 位，包含字母和数字" /><button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" aria-label="显示密码" @click="showPassword = !showPassword"><EyeOff v-if="showPassword" class="h-5 w-5" /><Eye v-else class="h-5 w-5" /></button></span></label>
             <label v-if="mode === 'register'" class="block"><span class="font-medium">确认密码</span><span class="relative mt-1 block"><Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-model="registerForm.confirmPassword" name="confirmPassword" type="password" required minlength="8" maxlength="72" autocomplete="new-password" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="再次输入密码" /></span></label>
             <div v-if="mode === 'login'" class="flex items-center justify-between text-sm"><label class="flex items-center gap-2 text-gray-600"><input v-model="remember" type="checkbox" />记住我</label><button type="button" class="text-blue-600" @click="switchMode('forgot')">忘记密码?</button></div>
             <label v-else class="flex items-start gap-2 text-sm text-gray-600"><input v-model="acceptedTerms" type="checkbox" class="mt-1" />我同意服务条款和隐私政策</label>
           </template>
-          <label v-else-if="mode === 'forgot'" class="block"><span class="font-medium">账号或邮箱</span><span class="relative mt-1 block"><Mail class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-model.trim="accountOrEmail" required maxlength="255" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入账号或邮箱" /></span></label>
+          <label v-else-if="mode === 'forgot'" class="block"><span class="font-medium">邮箱</span><span class="relative mt-1 block"><Mail class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-model.trim="accountOrEmail" name="accountOrEmail" type="email" required maxlength="255" autocomplete="email" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入邮箱" /></span></label>
           <template v-else>
-            <label class="block"><span class="font-medium">新密码</span><span class="relative mt-1 block"><Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-model="resetForm.newPassword" type="password" required minlength="8" maxlength="72" autocomplete="new-password" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="至少 8 位，包含字母和数字" /></span></label>
-            <label class="block"><span class="font-medium">确认新密码</span><span class="relative mt-1 block"><Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-model="resetForm.confirmPassword" type="password" required minlength="8" maxlength="72" autocomplete="new-password" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="再次输入新密码" /></span></label>
+            <label class="block"><span class="font-medium">新密码</span><span class="relative mt-1 block"><Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-model="resetForm.newPassword" name="newPassword" type="password" required minlength="8" maxlength="72" pattern="(?=.*[A-Za-z])(?=.*[0-9]).{8,72}" autocomplete="new-password" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="至少 8 位，包含字母和数字" /></span></label>
+            <label class="block"><span class="font-medium">确认新密码</span><span class="relative mt-1 block"><Lock class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" /><input v-model="resetForm.confirmPassword" name="resetConfirmPassword" type="password" required minlength="8" maxlength="72" autocomplete="new-password" class="w-full rounded-md border border-gray-300 py-2.5 pl-10 pr-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="再次输入新密码" /></span></label>
           </template>
           <p v-if="errorMessage" class="rounded-md bg-red-50 p-3 text-sm text-red-700">{{ errorMessage }}</p>
           <p v-if="successMessage" class="rounded-md bg-green-50 p-3 text-sm text-green-700">{{ successMessage }}</p>
