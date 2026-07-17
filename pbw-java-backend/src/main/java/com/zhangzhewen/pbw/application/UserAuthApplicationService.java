@@ -9,7 +9,6 @@ import com.zhangzhewen.pbw.application.dto.user.UserAuthDto.UserProfileVO;
 import com.zhangzhewen.pbw.application.dto.user.UserAuthDto.UserRegisterRequest;
 import com.zhangzhewen.pbw.domain.gateway.CurrentActorGateway;
 import com.zhangzhewen.pbw.domain.gateway.PasswordGateway;
-import com.zhangzhewen.pbw.domain.gateway.PasswordResetNotificationGateway;
 import com.zhangzhewen.pbw.domain.gateway.SessionGateway;
 import com.zhangzhewen.pbw.domain.gateway.TokenGateway;
 import com.zhangzhewen.pbw.domain.gateway.UserAccountGateway;
@@ -32,7 +31,6 @@ public class UserAuthApplicationService {
     private final TokenGateway tokenGateway;
     private final SessionGateway sessionGateway;
     private final PasswordGateway passwordGateway;
-    private final PasswordResetNotificationGateway passwordResetNotificationGateway;
     private final CurrentActorGateway currentActorGateway;
     private final Duration resetTokenTtl;
 
@@ -41,7 +39,6 @@ public class UserAuthApplicationService {
             TokenGateway tokenGateway,
             SessionGateway sessionGateway,
             PasswordGateway passwordGateway,
-            PasswordResetNotificationGateway passwordResetNotificationGateway,
             CurrentActorGateway currentActorGateway,
             @org.springframework.beans.factory.annotation.Value("${pbw.security.reset-token-ttl}") Duration resetTokenTtl
     ) {
@@ -49,7 +46,6 @@ public class UserAuthApplicationService {
         this.tokenGateway = tokenGateway;
         this.sessionGateway = sessionGateway;
         this.passwordGateway = passwordGateway;
-        this.passwordResetNotificationGateway = passwordResetNotificationGateway;
         this.currentActorGateway = currentActorGateway;
         this.resetTokenTtl = resetTokenTtl;
     }
@@ -99,11 +95,8 @@ public class UserAuthApplicationService {
         userGateway.findUserByAccountOrEmail(request.accountOrEmail()).ifPresent(user -> {
             String resetToken = "upr_" + UUID.randomUUID().toString().replace("-", "");
             sessionGateway.savePasswordResetToken(resetToken, user.base().id(), resetTokenTtl);
-            if (user.email() != null) {
-                passwordResetNotificationGateway.send(user.email(), user.nickname(), resetToken, resetTokenTtl);
-            }
         });
-        return new UserPasswordResetAcceptedVO("如果账号存在，密码重置邮件已发送");
+        return new UserPasswordResetAcceptedVO("发送成功");
     }
 
     @Transactional

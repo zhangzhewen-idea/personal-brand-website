@@ -226,7 +226,12 @@ class ApiIntegrationTest {
         mockMvc.perform(post("/api/user/password-reset-requests").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"accountOrEmail\":\"not-found@example.com\"}"))
                 .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.message").value("如果账号存在，密码重置邮件已发送"));
+                .andExpect(jsonPath("$.message").value("发送成功"));
+
+        mockMvc.perform(post("/api/user/password-reset-requests").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"accountOrEmail\":\"movie_fan\"}"))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.message").value("发送成功"));
 
         sessionGateway.savePasswordResetToken("upr_integration_test", 2L, Duration.ofMinutes(15));
         mockMvc.perform(post("/api/user/password-resets").contentType(MediaType.APPLICATION_JSON)
