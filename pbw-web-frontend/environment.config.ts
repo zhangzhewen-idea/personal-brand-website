@@ -5,7 +5,7 @@ const backendPorts: Record<AppEnvironment, number> = {
   prod: 8088,
 }
 
-const productionMediaBaseUrl = 'https://pwb-backend.harmonies.cc'
+const productionBackendBaseUrl = 'https://pbw-backend1.harmonies.cc'
 
 export function getEnvironmentConfig(mode: string) {
   if (mode !== 'dev' && mode !== 'prod') {
@@ -13,11 +13,13 @@ export function getEnvironmentConfig(mode: string) {
   }
 
   const backendPort = backendPorts[mode]
-  const backendTarget = `http://localhost:${backendPort}`
+  const backendTarget = mode === 'prod'
+    ? productionBackendBaseUrl
+    : `http://localhost:${backendPort}`
 
   return {
-    apiBaseUrl: mode === 'dev' ? '/api' : `${backendTarget}/api`,
-    mediaBaseUrl: mode === 'prod' ? productionMediaBaseUrl : backendTarget,
+    apiBaseUrl: mode === 'dev' ? '/api' : `${productionBackendBaseUrl}/api`,
+    mediaBaseUrl: mode === 'prod' ? productionBackendBaseUrl : backendTarget,
     backendTarget,
     backendPort,
   }

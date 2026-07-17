@@ -11,11 +11,11 @@ describe('getEnvironmentConfig', () => {
     })
   })
 
-  it('生产环境连接 8088 后端', () => {
+  it('生产环境通过 HTTPS 域名连接后端', () => {
     expect(getEnvironmentConfig('prod')).toEqual({
-      apiBaseUrl: 'http://localhost:8088/api',
-      mediaBaseUrl: 'https://pwb-backend.harmonies.cc',
-      backendTarget: 'http://localhost:8088',
+      apiBaseUrl: 'https://pbw-backend1.harmonies.cc/api',
+      mediaBaseUrl: 'https://pbw-backend1.harmonies.cc',
+      backendTarget: 'https://pbw-backend1.harmonies.cc',
       backendPort: 8088,
     })
   })
