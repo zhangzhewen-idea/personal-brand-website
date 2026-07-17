@@ -23,26 +23,25 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem(USER_KEY, JSON.stringify(nextUser))
   }
 
-  const login = async (account: string, password: string, testMode = true) => {
-    if (testMode) {
-      await new Promise((resolve) => window.setTimeout(resolve, 450))
-      if (account !== 'admin' || password !== '123456') {
-        throw new Error('测试账号或密码不正确')
-      }
-      saveSession('pbw-test-token', { nickname: '管理员', role: '管理员' })
-      return
-    }
-
+  const login = async (account: string, password: string) => {
     const { data } = await authApi.login({ account, password })
     saveSession(data.token, { nickname: data.nickname, role: data.role })
   }
 
-  const logout = () => {
+  const clearSession = () => {
     token.value = ''
     user.value = null
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
   }
 
-  return { token, user, isAuthenticated, login, logout }
+  const logout = async () => {
+    try {
+      if (token.value) await authApi.logout()
+    } finally {
+      clearSession()
+    }
+  }
+
+  return { token, user, isAuthenticated, login, logout, clearSession }
 })

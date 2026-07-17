@@ -66,11 +66,26 @@ export type UserRole = '用户' | '管理员'
 export interface User extends BaseRecord {
   nickname: string
   account: string
+  email: string | null
+  avatar: string | null
+  role: UserRole
+  passwordConfigured: boolean
+}
+
+export interface CreateUserRequest {
+  nickname: string
+  account: string
   password: string
   email: string | null
   avatar: string | null
   role: UserRole
 }
+
+export interface UpdateUserRequest extends Omit<CreateUserRequest, 'password'> {
+  password?: string | null
+}
+
+export type EntityWritePayload = Record<string, unknown>
 
 export type ManagementRecord = Video | MaterialLibrary | MatrixAccount | Course | User
 
@@ -104,5 +119,34 @@ export interface EntityPageConfig {
   searchPlaceholder: string
   searchFields: string[]
   columns: EntityColumn[]
-  rows: ManagementRecord[]
+}
+
+export interface DashboardMetric {
+  key: 'totalPlayCount' | 'totalLikeCount' | 'totalFollowerCount' | 'onlineCourseCount'
+  value: number
+  trendRate: number | null
+  trendDirection: 'up' | 'down' | 'flat'
+  caption: string
+}
+
+export interface DashboardData {
+  serverTime: string
+  adminNickname: string
+  metrics: DashboardMetric[]
+  contentSummary: {
+    videoCount: number
+    materialCount: number
+    matrixAccountCount: number
+    userCount: number
+  }
+  courseSummary: { onlineCount: number; totalCount: number; onlineRate: number }
+  latestVideos: Array<Pick<Video, 'id' | 'videoTitle' | 'videoIntro' | 'videoCover' | 'createTime'>>
+  profileSummary: Pick<BasicInfo, 'authorIdentityTag' | 'slogan' | 'creationAttitude'> | null
+  profileCompleteness: {
+    score: number
+    brandBasicInfoComplete: boolean
+    mediaResourcesComplete: boolean
+    annualTop10FilmCount: number
+    annualTop10FilmTarget: number
+  }
 }
