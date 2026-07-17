@@ -1,0 +1,43 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:25}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+pbw:
+  security:
+    jwt-secret: ${JWT_SECRET}
+  storage:
+    root: ${STORAGE_ROOT}
+    public-base-url: ${STORAGE_PUBLIC_BASE_URL}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  user:
+    password-reset-from: ${PASSWORD_RESET_FROM}
+    password-reset-page-url: ${PASSWORD_RESET_PAGE_URL}
+
+logging:
+  level:
+    root: WARN
+    com.zhangzhewen.pbw: INFO
+  file:
+    name: ${LOG_FILE:log/prod.log}
