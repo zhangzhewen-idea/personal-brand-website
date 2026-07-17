@@ -5,13 +5,13 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { ArrowRight, Check, Collection, Lock, User } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
+import { getApiErrorMessage } from '@/api/client'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
-const testMode = ref(true)
 
 const form = reactive({
   account: 'admin',
@@ -33,11 +33,11 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    await authStore.login(form.account, form.password, testMode.value)
+    await authStore.login(form.account, form.password)
     ElMessage.success('登录成功，欢迎回来')
     await router.replace(String(route.query.redirect || '/'))
   } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : '登录失败，请稍后重试')
+    ElMessage.error(getApiErrorMessage(error, '登录失败，请稍后重试'))
   } finally {
     loading.value = false
   }
@@ -87,15 +87,15 @@ const handleSubmit = async () => {
           <p>登录内容管理后台，继续今天的创作管理。</p>
         </div>
 
-        <div class="test-mode-card" :class="{ 'is-active': testMode }">
+        <div class="test-mode-card is-active">
           <div>
             <span class="test-mode-card__icon">T</span>
             <div>
-              <strong>临时测试模式</strong>
-              <small>无需连接后端 API 即可进入系统</small>
+              <strong>后端服务</strong>
+              <small>直接连接 http://localhost:8080</small>
             </div>
           </div>
-          <el-switch v-model="testMode" aria-label="临时测试模式" />
+          <el-tag type="success" effect="light" round>真实接口</el-tag>
         </div>
 
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent="handleSubmit">
@@ -125,14 +125,7 @@ const handleSubmit = async () => {
           </el-button>
         </el-form>
 
-        <div v-if="testMode" class="test-account">
-          <span>测试账号</span>
-          <code>admin</code>
-          <i>/</i>
-          <code>123456</code>
-        </div>
-
-        <p class="login-footer">PBW Studio · 内容管理原型系统</p>
+        <p class="login-footer">PBW Studio · 内容管理系统</p>
       </div>
     </section>
   </main>
