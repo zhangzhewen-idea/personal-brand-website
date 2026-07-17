@@ -51,3 +51,33 @@ Swagger UI：`http://localhost:8080/swagger-ui.html`
 ```bash
 mvn test
 ```
+
+## Docker Compose 部署
+
+部署脚本会先使用本机 Maven 打包，再以本地镜像
+`alibabadragonwell/dragonwell:25.0.3.0.3.9-standard-ga-anolis` 为基础构建 `pbw-java-backend:local` 应用镜像，
+不会拉取远程运行时镜像。应用 JAR 和 `uploads/` 的现有文件都会被打包进应用镜像。
+服务的容器端口和宿主机端口均为 `8088`。
+
+容器启动时会把镜像中的上传文件同步到 `pbw-uploads` Docker 命名卷。
+该卷会保留运行期间新增的上传文件；删除命名卷会同时删除这些持久化文件。
+
+直接创建名为 `pbw` 的 Compose 项目：
+
+```bash
+./deploy.sh
+```
+
+加入已有的 Compose 项目时传入项目名。脚本只新增或更新 `pbw-java-backend` 服务，
+不会移除该项目的其他服务：
+
+```bash
+./deploy.sh existing-project-name
+```
+
+`.env.docker` 已被根目录 `.claudeignore` 和 Git 忽略，不得提交。
+
+同一份 `compose.yaml` 还包含两个前端服务，前端发布脚本会使用 `prod` 环境构建镜像，并仅更新对应服务：
+
+- `../pbw-web-frontend/deploy.sh`：用户端，端口 `3001`
+- `../pbw-admin-frontend/deploy.sh`：管理端，端口 `3002`

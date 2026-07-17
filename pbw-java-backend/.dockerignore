@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!docker-entrypoint.sh
+!target/
+!target/*.jar
+!uploads/
+!uploads/**

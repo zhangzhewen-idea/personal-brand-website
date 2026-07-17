@@ -2,3 +2,4 @@ target/
 uploads/
 .idea/
 *.iml
+.env.docker

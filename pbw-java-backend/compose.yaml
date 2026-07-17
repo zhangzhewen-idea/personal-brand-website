@@ -1,0 +1,45 @@
+services:
+  pbw-web-frontend:
+    image: pbw-web-frontend:local
+    build:
+      context: ../pbw-web-frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+
+  pbw-admin-frontend:
+    image: pbw-admin-frontend:local
+    build:
+      context: ../pbw-admin-frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3002:80"
+
+  pbw-java-backend:
+    image: pbw-java-backend:local
+    pull_policy: never
+    init: true
+    restart: unless-stopped
+    working_dir: /app
+    env_file:
+      - path: .env.docker
+        required: false
+    environment:
+      SERVER_PORT: "8088"
+      STORAGE_ROOT: /app/uploads
+      STORAGE_PUBLIC_BASE_URL: /uploads
+      LOG_FILE: /app/log/main.log
+    ports:
+      - "8088:8088"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - type: bind
+        source: /Users/zhangzhewen/data/pbw/uploads
+        target: /app/uploads
+      - type: bind
+        source: /Users/zhangzhewen/data/pbw/log
+        target: /app/log
+    stop_grace_period: 30s

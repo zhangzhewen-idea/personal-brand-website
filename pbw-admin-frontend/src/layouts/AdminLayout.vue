@@ -27,6 +27,8 @@ const collapsed = ref(false)
 const searchVisible = ref(false)
 const searchKeyword = ref('')
 const searchInputRef = ref<{ focus: () => void }>()
+const appEnvironment = import.meta.env.VITE_APP_ENV
+const backendPort = import.meta.env.VITE_BACKEND_PORT
 
 const currentTitle = computed(() => String(route.meta.title || '工作台'))
 
@@ -106,8 +108,8 @@ const handleUserCommand = async (command: string) => {
         <div class="system-state">
           <span class="system-state__dot"></span>
           <div>
-            <strong>本地环境</strong>
-            <span>后端服务 :8080</span>
+            <strong>{{ appEnvironment === 'prod' ? '生产环境' : '开发环境' }}</strong>
+            <span>后端服务 :{{ backendPort }}</span>
           </div>
         </div>
       </div>
