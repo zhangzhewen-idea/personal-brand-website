@@ -45,7 +45,7 @@ class ApiIntegrationTest {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", () -> MYSQL.getJdbcUrl() + "?connectionTimeZone=Asia/Shanghai&forceConnectionTimeZoneToSession=true");
+        registry.add("spring.datasource.url", () -> MYSQL.getJdbcUrl() + "?serverTimezone=GMT%2B8");
         registry.add("spring.datasource.username", MYSQL::getUsername);
         registry.add("spring.datasource.password", MYSQL::getPassword);
         registry.add("spring.data.redis.host", REDIS::getHost);

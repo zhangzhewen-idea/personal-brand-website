@@ -21,31 +21,43 @@
         <java.version>25</java.version>
         <maven.compiler.release>25</maven.compiler.release>
         <mybatis-plus.version>3.5.17</mybatis-plus.version>
-        <springdoc.version>3.0.3</springdoc.version>
+        <springdoc.version>3.0.0</springdoc.version>
         <archunit.version>1.4.1</archunit.version>
         <testcontainers.version>2.0.5</testcontainers.version>
     </properties>
 
     <repositories>
         <repository>
-            <id>central</id>
-            <name>Maven Central Mirror</name>
-            <url>https://maven.aliyun.com/repository/central</url>
+            <id>aliyunmaven</id>
+            <name>Aliyun Maven Central</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
-            <id>central</id>
-            <name>Maven Central Mirror</name>
-            <url>https://maven.aliyun.com/repository/central</url>
+            <id>aliyunmaven</id>
+            <name>Aliyun Maven Central</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </pluginRepository>
     </pluginRepositories>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webmvc</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
