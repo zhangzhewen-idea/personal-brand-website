@@ -30,9 +30,9 @@ export const videos: VideoItem[] = [
 ]
 
 export const materials: MaterialItem[] = [
-  { id: 1, ...audit, materialTitle: '电影海报素材包', materialPhoto: 'https://cdn.example.com/materials/poster-pack.jpg', materialIntro: '适合电影解说封面、分镜展示和宣传页使用。', price: 39.9, netdiskUrl: 'https://pan.example.com/s/abcd1234', itemCount: 150, colorClass: 'bg-blue-500', iconName: 'Scissors' },
-  { id: 2, ...audit, materialTitle: '转场动效合集', materialPhoto: 'https://cdn.example.com/materials/transition-pack.jpg', materialIntro: '包含 100+ 常用转场，适合短视频快节奏剪辑。', price: 59, netdiskUrl: 'https://pan.example.com/s/efgh5678', itemCount: 300, colorClass: 'bg-purple-500', iconName: 'Volume2' },
-  { id: 3, ...audit, materialTitle: '字幕样式模板', materialPhoto: 'https://cdn.example.com/materials/subtitle-pack.jpg', materialIntro: '适合打造统一视觉风格的片头字幕与重点标注。', price: 29, netdiskUrl: 'https://pan.example.com/s/ijkl9012', itemCount: 20, colorClass: 'bg-green-500', iconName: 'Video' },
+  { id: 1, ...audit, materialTitle: '电影海报素材包', materialPhoto: 'https://cdn.example.com/materials/poster-pack.jpg', materialIntro: '适合电影解说封面、分镜展示和宣传页使用。', price: 39.9, netdiskUrl: 'https://pan.example.com/s/abcd1234', itemCount: 150, isFree: false, colorClass: 'bg-blue-500', iconName: 'Scissors' },
+  { id: 2, ...audit, materialTitle: '转场动效合集', materialPhoto: 'https://cdn.example.com/materials/transition-pack.jpg', materialIntro: '包含 100+ 常用转场，适合短视频快节奏剪辑。', price: 59, netdiskUrl: 'https://pan.example.com/s/efgh5678', itemCount: 300, isFree: false, colorClass: 'bg-purple-500', iconName: 'Volume2' },
+  { id: 3, ...audit, materialTitle: '字幕样式模板', materialPhoto: 'https://cdn.example.com/materials/subtitle-pack.jpg', materialIntro: '适合打造统一视觉风格的片头字幕与重点标注。', price: 29, netdiskUrl: 'https://pan.example.com/s/ijkl9012', itemCount: 20, isFree: false, colorClass: 'bg-green-500', iconName: 'Video' },
   { id: 4, ...audit, materialTitle: '粉丝福利', materialPhoto: null, materialIntro: '免费素材整合包，持续更新。', price: 0, netdiskUrl: 'https://pan.example.com/s/fans', itemCount: 100, isFree: true, colorClass: 'bg-orange-500', iconName: 'Gift' },
 ]
 

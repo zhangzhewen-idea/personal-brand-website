@@ -1,11 +1,5 @@
-export interface BaseEntity {
+export interface BasicInfo {
   id: number
-  createTime: string
-  updateTime: string
-  isDeleted: boolean
-}
-
-export interface BasicInfo extends BaseEntity {
   homeCoverVideo: string | null
   contactEmail: string | null
   contactQrCode: string | null
@@ -24,54 +18,68 @@ export interface BasicInfo extends BaseEntity {
   contactInfo: string | null
 }
 
-export interface VideoItem extends BaseEntity {
+export interface VideoItem {
+  id: number
   videoTitle: string
   videoIntro: string | null
   videoUrl: string
   videoCover: string | null
-  platformName?: string
-  playCountText?: string
+  platformName: string | null
+  playCountText: string | null
 }
 
-export interface MaterialItem extends BaseEntity {
+export type MaterialIconName = 'Scissors' | 'Volume2' | 'Video' | 'Gift'
+
+export interface MaterialItem {
+  id: number
   materialTitle: string
   materialPhoto: string | null
   materialIntro: string | null
   price: number
   netdiskUrl: string | null
-  itemCount?: number
-  isFree?: boolean
-  colorClass?: string
-  iconName?: string
+  itemCount: number
+  isFree: boolean
+  colorClass: string
+  iconName: MaterialIconName
 }
 
-export interface MatrixAccount extends BaseEntity {
+export interface MatrixAccount {
+  id: number
   platformName: string
   platformLogo: string | null
   accountUrl: string | null
   intro: string | null
-  followerCountText?: string
-  colorClass?: string
+  followerCountText: string | null
+  colorClass: string
 }
 
-export interface Course extends BaseEntity {
+export type CourseIconName = 'Video' | 'GraduationCap' | 'Palette' | 'TrendingUp'
+
+export interface Course {
+  id: number
   courseName: string
   courseTag: string | null
   courseIntro: string | null
   coursePrice: number
   isOnline: boolean
-  duration?: string
-  lessonCount?: number
-  features?: string[]
-  colorClass?: string
-  iconName?: string
+  duration: string | null
+  lessonCount: number
+  features: string[]
+  colorClass: string
+  iconName: CourseIconName
 }
 
-export interface User extends BaseEntity {
+export interface User {
+  id: number
   nickname: string
   account: string
-  password: string
   email: string | null
   avatar: string | null
-  role: '用户' | '管理员'
+  role: '用户'
+}
+
+export interface LoginResult {
+  token: string
+  expiresIn: number
+  user: User
 }
