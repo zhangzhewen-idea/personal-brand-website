@@ -7,12 +7,19 @@ export interface LoginPayload {
 
 export interface LoginResponse {
   token: string
+  expiresIn: number
   nickname: string
   role: '管理员'
 }
 
 export const authApi = {
   login(payload: LoginPayload) {
-    return apiClient.post<LoginResponse>('/admin/login', payload)
+    return apiClient.post<LoginResponse>('/admin/session', payload)
+  },
+  getSession() {
+    return apiClient.get<Omit<LoginResponse, 'token'>>('/admin/session')
+  },
+  logout() {
+    return apiClient.delete<void>('/admin/session')
   },
 }
