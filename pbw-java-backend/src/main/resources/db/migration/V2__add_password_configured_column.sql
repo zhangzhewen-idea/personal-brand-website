@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD COLUMN `password_configured` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '密码是否已配置' AFTER `password`;
