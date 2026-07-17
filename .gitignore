@@ -35,6 +35,7 @@ build/
 **/.vite/
 **/coverage/
 *.log
+*.log.*
 .env
 
 ### VS Code ###
