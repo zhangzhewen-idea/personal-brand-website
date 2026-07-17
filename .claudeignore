@@ -1,0 +1,35 @@
+# 版本控制与 IDE 元数据
+.git/
+**/.idea/
+.DS_Store
+
+# 依赖与工具缓存
+**/node_modules/
+**/.vite/
+**/.cache/
+.superpowers/
+
+# 前后端构建与测试产物
+**/dist/
+**/coverage/
+pbw-java-backend/target/
+**/*.class
+**/*.jar
+**/*.tsbuildinfo
+
+# 运行时生成数据
+**/log/
+**/logs/
+**/*.log
+pbw-java-backend/uploads/
+
+# 本地敏感配置；保留可提交的示例配置供扫描
+.env
+.env.*
+!.env.example
+!.env.*.example
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+**/*.jks
