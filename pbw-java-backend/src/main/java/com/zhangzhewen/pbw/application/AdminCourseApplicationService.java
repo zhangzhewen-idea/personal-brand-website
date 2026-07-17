@@ -44,7 +44,8 @@ public class AdminCourseApplicationService {
     @Transactional
     public AdminCourseVO update(Long id, AdminCourseRequest request) {
         Course old = requiredActive(id);
-        Course saved = gateway.update(fromRequest(old.base(), request));
+        Course requested = fromRequest(old.base(), request);
+        Course saved = gateway.update(new Course(requested.base(), requested.courseName(), requested.courseTag(), requested.courseIntro(), requested.coursePrice(), requested.online(), old.duration(), old.lessonCount(), old.features(), old.colorClass(), old.iconName(), old.userVisible()));
         audit.success("UPDATE", "course", id);
         return toVO(saved);
     }
@@ -52,7 +53,7 @@ public class AdminCourseApplicationService {
     @Transactional
     public AdminCourseVO copy(Long id) {
         Course old = required(id);
-        Course saved = gateway.insert(new Course(AdminApplicationSupport.newBase(), AdminApplicationSupport.copyName(old.courseName(), 255), old.courseTag(), old.courseIntro(), old.coursePrice(), old.online()));
+        Course saved = gateway.insert(new Course(AdminApplicationSupport.newBase(), AdminApplicationSupport.copyName(old.courseName(), 255), old.courseTag(), old.courseIntro(), old.coursePrice(), old.online(), old.duration(), old.lessonCount(), old.features(), old.colorClass(), old.iconName(), old.userVisible()));
         audit.success("COPY", "course", saved.base().id());
         return toVO(saved);
     }

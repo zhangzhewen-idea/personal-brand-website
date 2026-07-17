@@ -1,17 +1,26 @@
 package com.zhangzhewen.pbw.adapter.user;
 
 import com.zhangzhewen.pbw.application.UserContentApplicationService;
-import com.zhangzhewen.pbw.application.dto.user.UserContentDto.UserBasicInfoVO;
+import com.zhangzhewen.pbw.application.dto.user.UserContentDto.UserCourseVO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "用户端基本信息")
+import java.util.List;
+
+@Tag(name = "用户端课程")
 @RestController
-@RequestMapping("/api/user/basic-info")
-public class UserContentController {
+@RequestMapping("/api/user/courses")
+public class UserCourseController {
     private final UserContentApplicationService service;
-    public UserContentController(UserContentApplicationService service) { this.service = service; }
-    @GetMapping public UserBasicInfoVO basicInfo() { return service.basicInfo(); }
+
+    public UserCourseController(UserContentApplicationService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public List<UserCourseVO> courses() {
+        return service.courses();
+    }
 }

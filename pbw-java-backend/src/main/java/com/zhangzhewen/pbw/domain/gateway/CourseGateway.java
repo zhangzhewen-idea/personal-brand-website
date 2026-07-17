@@ -8,4 +8,6 @@ public interface CourseGateway extends ManagedResourceGateway<Course> {
     long countOnlineActive();
 
     List<Course> listOnlineActive();
+
+    List<Course> listUserVisible();
 }

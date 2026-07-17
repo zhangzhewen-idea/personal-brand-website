@@ -6,6 +6,7 @@ import com.zhangzhewen.pbw.application.dto.admin.AdminUserDto.AdminCreateUserReq
 import com.zhangzhewen.pbw.application.dto.admin.AdminUserDto.AdminUpdateUserRequest;
 import com.zhangzhewen.pbw.application.dto.admin.AdminUserDto.AdminUserVO;
 import com.zhangzhewen.pbw.domain.gateway.CurrentActorGateway;
+import com.zhangzhewen.pbw.domain.gateway.PasswordGateway;
 import com.zhangzhewen.pbw.domain.gateway.SessionGateway;
 import com.zhangzhewen.pbw.domain.gateway.UserAccountGateway;
 import com.zhangzhewen.pbw.domain.shared.BusinessException;
@@ -25,12 +26,14 @@ public class AdminUserApplicationService {
     private static final Set<String> SORT_FIELDS = Set.of("id", "nickname", "account", "role", "createTime", "updateTime");
     private final UserAccountGateway gateway;
     private final SessionGateway sessionGateway;
+    private final PasswordGateway passwordGateway;
     private final CurrentActorGateway currentActorGateway;
     private final AuditRecorder audit;
 
-    public AdminUserApplicationService(UserAccountGateway gateway, SessionGateway sessionGateway, CurrentActorGateway currentActorGateway, AuditRecorder audit) {
+    public AdminUserApplicationService(UserAccountGateway gateway, SessionGateway sessionGateway, PasswordGateway passwordGateway, CurrentActorGateway currentActorGateway, AuditRecorder audit) {
         this.gateway = gateway;
         this.sessionGateway = sessionGateway;
+        this.passwordGateway = passwordGateway;
         this.currentActorGateway = currentActorGateway;
         this.audit = audit;
     }
@@ -48,7 +51,7 @@ public class AdminUserApplicationService {
     @Transactional
     public AdminUserVO create(AdminCreateUserRequest request) {
         ensureUnique(request.account(), request.email(), null);
-        UserAccount saved = gateway.insert(new UserAccount(AdminApplicationSupport.newBase(), request.nickname(), request.account(), request.password(), true, request.email(), request.avatar(), UserRole.fromDisplayName(request.role())));
+        UserAccount saved = gateway.insert(new UserAccount(AdminApplicationSupport.newBase(), request.nickname(), request.account(), passwordGateway.encode(request.password()), true, request.email(), request.avatar(), UserRole.fromDisplayName(request.role())));
         audit.success("CREATE", "user", saved.base().id());
         return toVO(saved);
     }
@@ -61,7 +64,7 @@ public class AdminUserApplicationService {
             throw BusinessException.conflict("系统至少需要保留一个正常管理员");
         }
         ensureUnique(request.account(), request.email(), id);
-        String password = request.password() == null ? old.password() : request.password();
+        String password = request.password() == null ? old.password() : passwordGateway.encode(request.password());
         boolean configured = request.password() == null ? old.passwordConfigured() : true;
         UserAccount saved = gateway.update(new UserAccount(old.base(), request.nickname(), request.account(), password, configured, request.email(), request.avatar(), newRole));
         if (request.password() != null || newRole != old.role()) {

@@ -15,6 +15,8 @@ public interface UserAccountGateway {
 
     Optional<UserAccount> findAdminByAccountOrEmail(String accountOrEmail);
 
+    Optional<UserAccount> findUserByAccountOrEmail(String accountOrEmail);
+
     boolean accountExists(String account, Long excludingId);
 
     boolean emailExists(String email, Long excludingId);

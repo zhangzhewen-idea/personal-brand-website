@@ -47,7 +47,7 @@ public class AdminVideoApplicationService {
     @Transactional
     public AdminVideoVO update(Long id, AdminVideoRequest request) {
         Video old = requiredActive(id);
-        Video saved = gateway.update(new Video(old.base(), request.videoTitle(), request.videoIntro(), request.videoUrl(), request.videoCover()));
+        Video saved = gateway.update(new Video(old.base(), request.videoTitle(), request.videoIntro(), request.videoUrl(), request.videoCover(), old.platformName(), old.playCountText()));
         audit.success("UPDATE", "video", id);
         return toVO(saved);
     }
@@ -55,7 +55,7 @@ public class AdminVideoApplicationService {
     @Transactional
     public AdminVideoVO copy(Long id) {
         Video old = required(id);
-        Video saved = gateway.insert(new Video(AdminApplicationSupport.newBase(), AdminApplicationSupport.copyName(old.videoTitle(), 255), old.videoIntro(), old.videoUrl(), old.videoCover()));
+        Video saved = gateway.insert(new Video(AdminApplicationSupport.newBase(), AdminApplicationSupport.copyName(old.videoTitle(), 255), old.videoIntro(), old.videoUrl(), old.videoCover(), old.platformName(), old.playCountText()));
         audit.success("COPY", "video", saved.base().id());
         return toVO(saved);
     }

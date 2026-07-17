@@ -33,7 +33,7 @@ public final class UserContentDto {
         }
     }
 
-    public record UserVideoVO(Long id, String videoTitle, String videoIntro, String videoUrl, String videoCover) {
+    public record UserVideoVO(Long id, String videoTitle, String videoIntro, String videoUrl, String videoCover, String platformName, String playCountText) {
     }
 
     public record UserMaterialVO(
@@ -42,21 +42,32 @@ public final class UserContentDto {
             String materialPhoto,
             String materialIntro,
             BigDecimal price,
-            int stock,
-            List<UserSpecificationVO> specifications,
+            int itemCount,
+            boolean isFree,
+            String colorClass,
+            String iconName,
             String netdiskUrl
     ) {
-        public UserMaterialVO {
-            specifications = List.copyOf(specifications);
+    }
+
+    public record UserMatrixAccountVO(Long id, String platformName, String platformLogo, String accountUrl, String intro, String followerCountText, String colorClass) {
+    }
+
+    public record UserCourseVO(
+            Long id,
+            String courseName,
+            String courseTag,
+            String courseIntro,
+            BigDecimal coursePrice,
+            boolean isOnline,
+            String duration,
+            int lessonCount,
+            List<String> features,
+            String colorClass,
+            String iconName
+    ) {
+        public UserCourseVO {
+            features = List.copyOf(features);
         }
-    }
-
-    public record UserSpecificationVO(String name, String value) {
-    }
-
-    public record UserMatrixAccountVO(Long id, String platformName, String platformLogo, String accountUrl, String intro) {
-    }
-
-    public record UserCourseVO(Long id, String courseName, String courseTag, String courseIntro, BigDecimal coursePrice) {
     }
 }

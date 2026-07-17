@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/uploads/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/admin/session", "/api/admin/password-reset-requests", "/api/admin/password-resets", "/api/user/session", "/api/user/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/session", "/api/admin/password-reset-requests", "/api/admin/password-resets", "/api/user/session", "/api/user/users", "/api/user/password-reset-requests", "/api/user/password-resets").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/basic-info", "/api/user/videos", "/api/user/materials", "/api/user/matrix-accounts", "/api/user/courses").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasRole("USER")

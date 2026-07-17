@@ -45,7 +45,8 @@ public class AdminMaterialApplicationService {
     @Transactional
     public AdminMaterialVO update(Long id, AdminMaterialRequest request) {
         Material old = requiredActive(id);
-        Material saved = gateway.update(fromRequest(old.base(), request));
+        Material requested = fromRequest(old.base(), request);
+        Material saved = gateway.update(new Material(requested.base(), requested.materialTitle(), requested.materialPhoto(), requested.materialIntro(), requested.price(), requested.stock(), requested.specifications(), requested.netdiskUrl(), old.itemCount(), old.colorClass(), old.iconName()));
         audit.success("UPDATE", "material", id);
         return toVO(saved);
     }
@@ -53,7 +54,7 @@ public class AdminMaterialApplicationService {
     @Transactional
     public AdminMaterialVO copy(Long id) {
         Material old = required(id);
-        Material saved = gateway.insert(new Material(AdminApplicationSupport.newBase(), AdminApplicationSupport.copyName(old.materialTitle(), 255), old.materialPhoto(), old.materialIntro(), old.price(), old.stock(), old.specifications(), old.netdiskUrl()));
+        Material saved = gateway.insert(new Material(AdminApplicationSupport.newBase(), AdminApplicationSupport.copyName(old.materialTitle(), 255), old.materialPhoto(), old.materialIntro(), old.price(), old.stock(), old.specifications(), old.netdiskUrl(), old.itemCount(), old.colorClass(), old.iconName()));
         audit.success("COPY", "material", saved.base().id());
         return toVO(saved);
     }

@@ -13,6 +13,9 @@ public class MatrixAccountPO extends BasePO {
     private String accountUrl;
     @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String intro;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private String followerCountText;
+    private String colorClass;
 
     public String getPlatformName() { return platformName; }
     public void setPlatformName(String value) { this.platformName = value; }
@@ -22,4 +25,8 @@ public class MatrixAccountPO extends BasePO {
     public void setAccountUrl(String value) { this.accountUrl = value; }
     public String getIntro() { return intro; }
     public void setIntro(String value) { this.intro = value; }
+    public String getFollowerCountText() { return followerCountText; }
+    public void setFollowerCountText(String value) { this.followerCountText = value; }
+    public String getColorClass() { return colorClass; }
+    public void setColorClass(String value) { this.colorClass = value; }
 }

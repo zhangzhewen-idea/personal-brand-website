@@ -18,6 +18,9 @@ public class MaterialPO extends BasePO {
     private String specifications;
     @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String netdiskUrl;
+    private Integer itemCount;
+    private String colorClass;
+    private String iconName;
 
     public String getMaterialTitle() { return materialTitle; }
     public void setMaterialTitle(String value) { this.materialTitle = value; }
@@ -33,4 +36,10 @@ public class MaterialPO extends BasePO {
     public void setSpecifications(String value) { this.specifications = value; }
     public String getNetdiskUrl() { return netdiskUrl; }
     public void setNetdiskUrl(String value) { this.netdiskUrl = value; }
+    public Integer getItemCount() { return itemCount; }
+    public void setItemCount(Integer value) { this.itemCount = value; }
+    public String getColorClass() { return colorClass; }
+    public void setColorClass(String value) { this.colorClass = value; }
+    public String getIconName() { return iconName; }
+    public void setIconName(String value) { this.iconName = value; }
 }

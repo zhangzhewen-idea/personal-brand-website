@@ -8,6 +8,7 @@ import com.zhangzhewen.pbw.application.dto.admin.AdminAuthDto.AdminPasswordReset
 import com.zhangzhewen.pbw.application.dto.admin.AdminAuthDto.AdminPasswordResetResultVO;
 import com.zhangzhewen.pbw.application.dto.admin.AdminAuthDto.AdminSessionVO;
 import com.zhangzhewen.pbw.domain.gateway.CurrentActorGateway;
+import com.zhangzhewen.pbw.domain.gateway.PasswordGateway;
 import com.zhangzhewen.pbw.domain.gateway.SessionGateway;
 import com.zhangzhewen.pbw.domain.gateway.TokenGateway;
 import com.zhangzhewen.pbw.domain.gateway.UserAccountGateway;
@@ -28,6 +29,7 @@ public class AdminAuthApplicationService {
     private final UserAccountGateway userGateway;
     private final TokenGateway tokenGateway;
     private final SessionGateway sessionGateway;
+    private final PasswordGateway passwordGateway;
     private final CurrentActorGateway currentActorGateway;
     private final Duration resetTokenTtl;
 
@@ -35,12 +37,14 @@ public class AdminAuthApplicationService {
             UserAccountGateway userGateway,
             TokenGateway tokenGateway,
             SessionGateway sessionGateway,
+            PasswordGateway passwordGateway,
             CurrentActorGateway currentActorGateway,
             @Value("${pbw.security.reset-token-ttl}") Duration resetTokenTtl
     ) {
         this.userGateway = userGateway;
         this.tokenGateway = tokenGateway;
         this.sessionGateway = sessionGateway;
+        this.passwordGateway = passwordGateway;
         this.currentActorGateway = currentActorGateway;
         this.resetTokenTtl = resetTokenTtl;
     }
@@ -49,7 +53,8 @@ public class AdminAuthApplicationService {
     public AdminLoginVO login(AdminLoginRequest request) {
         UserAccount user = userGateway.findByAccount(request.account())
                 .filter(value -> value.role() == UserRole.ADMIN)
-                .filter(value -> value.canLoginWith(request.password()))
+                .filter(value -> value.passwordConfigured() && !value.base().deleted())
+                .filter(value -> passwordGateway.matches(request.password(), value.password()))
                 .orElseThrow(() -> BusinessException.unauthorized("账号或密码错误"));
         AccessToken token = tokenGateway.issue(user);
         sessionGateway.save(user.base().id(), token);
@@ -85,7 +90,7 @@ public class AdminAuthApplicationService {
         Long userId = sessionGateway.consumePasswordResetToken(request.resetToken())
                 .orElseThrow(() -> BusinessException.unauthorized("密码重置令牌无效或已过期"));
         UserAccount old = userGateway.findById(userId).orElseThrow(() -> BusinessException.notFound("管理员", userId));
-        userGateway.update(new UserAccount(old.base(), old.nickname(), old.account(), request.newPassword(), true, old.email(), old.avatar(), old.role()));
+        userGateway.update(new UserAccount(old.base(), old.nickname(), old.account(), passwordGateway.encode(request.newPassword()), true, old.email(), old.avatar(), old.role()));
         sessionGateway.revokeAll(userId);
         return new AdminPasswordResetResultVO(true);
     }

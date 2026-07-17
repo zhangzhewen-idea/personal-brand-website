@@ -23,6 +23,6 @@ public class VideoGatewayImpl extends AbstractManagedGateway<Video, VideoPO> imp
     @Override public List<Video> latestActive(int limit) { return mapper.selectList(new QueryWrapper<VideoPO>().eq("`is_deleted`", false).orderByDesc("`create_time`", "`id`").last("LIMIT " + limit)).stream().map(this::toDomain).toList(); }
     @Override public List<Video> listActive() { return listActiveByCreatedTime(); }
 
-    @Override protected Video toDomain(VideoPO po) { return new Video(PersistenceSupport.toBase(po), po.getVideoTitle(), po.getVideoIntro(), po.getVideoUrl(), po.getVideoCover()); }
-    @Override protected VideoPO toPO(Video v) { VideoPO po = new VideoPO(); PersistenceSupport.copyBase(v.base(), po); po.setVideoTitle(v.videoTitle()); po.setVideoIntro(v.videoIntro()); po.setVideoUrl(v.videoUrl()); po.setVideoCover(v.videoCover()); return po; }
+    @Override protected Video toDomain(VideoPO po) { return new Video(PersistenceSupport.toBase(po), po.getVideoTitle(), po.getVideoIntro(), po.getVideoUrl(), po.getVideoCover(), po.getPlatformName(), po.getPlayCountText()); }
+    @Override protected VideoPO toPO(Video v) { VideoPO po = new VideoPO(); PersistenceSupport.copyBase(v.base(), po); po.setVideoTitle(v.videoTitle()); po.setVideoIntro(v.videoIntro()); po.setVideoUrl(v.videoUrl()); po.setVideoCover(v.videoCover()); po.setPlatformName(v.platformName()); po.setPlayCountText(v.playCountText()); return po; }
 }

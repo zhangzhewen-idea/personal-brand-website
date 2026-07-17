@@ -4,7 +4,6 @@ import com.zhangzhewen.pbw.application.dto.user.UserContentDto.UserBasicInfoVO;
 import com.zhangzhewen.pbw.application.dto.user.UserContentDto.UserCourseVO;
 import com.zhangzhewen.pbw.application.dto.user.UserContentDto.UserMaterialVO;
 import com.zhangzhewen.pbw.application.dto.user.UserContentDto.UserMatrixAccountVO;
-import com.zhangzhewen.pbw.application.dto.user.UserContentDto.UserSpecificationVO;
 import com.zhangzhewen.pbw.application.dto.user.UserContentDto.UserVideoVO;
 import com.zhangzhewen.pbw.domain.content.BasicInfo;
 import com.zhangzhewen.pbw.domain.gateway.BasicInfoGateway;
@@ -42,22 +41,22 @@ public class UserContentApplicationService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserVideoVO> videos() {
-        return videoGateway.listActive().stream().map(v -> new UserVideoVO(v.base().id(), v.videoTitle(), v.videoIntro(), v.videoUrl(), v.videoCover())).toList();
+    public List<UserVideoVO> videos(int limit) {
+        return videoGateway.latestActive(limit).stream().map(v -> new UserVideoVO(v.base().id(), v.videoTitle(), v.videoIntro(), v.videoUrl(), v.videoCover(), v.platformName(), v.playCountText())).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<UserMaterialVO> materials() {
-        return materialGateway.listActive().stream().map(m -> new UserMaterialVO(m.base().id(), m.materialTitle(), m.materialPhoto(), m.materialIntro(), m.price(), m.stock(), m.specifications().stream().map(s -> new UserSpecificationVO(s.name(), s.value())).toList(), m.netdiskUrl())).toList();
+    public List<UserMaterialVO> materials(int limit) {
+        return materialGateway.listActive(limit).stream().map(m -> new UserMaterialVO(m.base().id(), m.materialTitle(), m.materialPhoto(), m.materialIntro(), m.price(), m.itemCount(), m.free(), m.colorClass(), m.iconName(), m.free() ? m.netdiskUrl() : null)).toList();
     }
 
     @Transactional(readOnly = true)
     public List<UserMatrixAccountVO> matrixAccounts() {
-        return matrixGateway.listActive().stream().map(m -> new UserMatrixAccountVO(m.base().id(), m.platformName(), m.platformLogo(), m.accountUrl(), m.intro())).toList();
+        return matrixGateway.listActive().stream().map(m -> new UserMatrixAccountVO(m.base().id(), m.platformName(), m.platformLogo(), m.accountUrl(), m.intro(), m.followerCountText(), m.colorClass())).toList();
     }
 
     @Transactional(readOnly = true)
     public List<UserCourseVO> courses() {
-        return courseGateway.listOnlineActive().stream().map(c -> new UserCourseVO(c.base().id(), c.courseName(), c.courseTag(), c.courseIntro(), c.coursePrice())).toList();
+        return courseGateway.listUserVisible().stream().map(c -> new UserCourseVO(c.base().id(), c.courseName(), c.courseTag(), c.courseIntro(), c.coursePrice(), c.online(), c.duration(), c.lessonCount(), c.features(), c.colorClass(), c.iconName())).toList();
     }
 }

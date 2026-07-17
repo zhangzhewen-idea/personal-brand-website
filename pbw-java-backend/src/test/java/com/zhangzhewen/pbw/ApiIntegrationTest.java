@@ -1,5 +1,6 @@
 package com.zhangzhewen.pbw;
 
+import com.zhangzhewen.pbw.domain.gateway.SessionGateway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -17,6 +18,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -55,6 +58,7 @@ class ApiIntegrationTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
+    @Autowired SessionGateway sessionGateway;
     private String adminToken;
 
     @BeforeAll
@@ -135,20 +139,121 @@ class ApiIntegrationTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 
-        String courses = mockMvc.perform(get("/api/user/courses"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2))
+        mockMvc.perform(get("/api/user/videos").param("limit", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.platformName == '抖音')]").isNotEmpty())
+                .andExpect(jsonPath("$[?(@.playCountText == '180万')]").isNotEmpty());
+
+        mockMvc.perform(get("/api/user/videos").param("limit", "0"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
+
+        String materials = mockMvc.perform(get("/api/user/materials"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$[?(@.isFree == true)].netdiskUrl").isNotEmpty())
+                .andExpect(jsonPath("$[0].colorClass").isNotEmpty())
+                .andExpect(jsonPath("$[0].iconName").isNotEmpty())
                 .andReturn().getResponse().getContentAsString();
-        assertThat(courses).doesNotContain("isDeleted", "isOnline", "createTime", "updateTime");
+        objectMapper.readTree(materials).forEach(material -> {
+            if (!material.path("isFree").asBoolean()) {
+                assertThat(material.path("netdiskUrl").isNull()).isTrue();
+            }
+        });
+
+        mockMvc.perform(get("/api/user/matrix-accounts"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$[0].followerCountText").isNotEmpty())
+                .andExpect(jsonPath("$[0].colorClass").isNotEmpty());
+
+        String courses = mockMvc.perform(get("/api/user/courses"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$[?(@.isOnline == false)]").isNotEmpty())
+                .andExpect(jsonPath("$[0].features").isArray())
+                .andExpect(jsonPath("$[0].lessonCount").isNumber())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(courses).doesNotContain("isDeleted", "createTime", "updateTime", "userVisible");
+
+        mockMvc.perform(get("/api/user/basic-info"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalPlayCount").value(12800000))
+                .andExpect(jsonPath("$.annualTop10Films").isArray());
     }
 
     @Test
     @Order(5)
+    void userSessionCanBeRestoredAndRevoked() throws Exception {
+        String userToken = tokenFor("/api/user/session", "movie_fan", "123456");
+        mockMvc.perform(get("/api/user/session").header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.account").value("movie_fan"))
+                .andExpect(jsonPath("$.role").value("用户"))
+                .andExpect(jsonPath("$.password").doesNotExist());
+
+        mockMvc.perform(delete("/api/user/session").header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/user/session").header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Order(6)
+    void userRegistrationCreatesSessionAndRejectsDuplicateAccount() throws Exception {
+        String body = """
+                {"nickname":"新用户","account":"new_user_2026","email":"NEW.USER@example.com","password":"Register2026"}
+                """;
+        mockMvc.perform(post("/api/user/users").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", org.hamcrest.Matchers.matchesPattern("/api/user/users/[0-9]+")))
+                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.user.email").value("new.user@example.com"))
+                .andExpect(jsonPath("$.user.role").value("用户"));
+
+        mockMvc.perform(post("/api/user/users").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("RESOURCE_CONFLICT"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("account"));
+
+        tokenFor("/api/user/session", "new_user_2026", "Register2026");
+    }
+
+    @Test
+    @Order(7)
+    void userPasswordResetUsesOneTimeTokenAndRevokesExistingSessions() throws Exception {
+        String activeToken = tokenFor("/api/user/session", "movie_fan", "123456");
+
+        mockMvc.perform(post("/api/user/password-reset-requests").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"accountOrEmail\":\"not-found@example.com\"}"))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.message").value("如果账号存在，密码重置邮件已发送"));
+
+        sessionGateway.savePasswordResetToken("upr_integration_test", 2L, Duration.ofMinutes(15));
+        mockMvc.perform(post("/api/user/password-resets").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"resetToken\":\"upr_integration_test\",\"newPassword\":\"Changed2026\"}"))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/user/session").header("Authorization", "Bearer " + activeToken))
+                .andExpect(status().isUnauthorized());
+        tokenFor("/api/user/session", "movie_fan", "Changed2026");
+
+        mockMvc.perform(post("/api/user/password-resets").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"resetToken\":\"upr_integration_test\",\"newPassword\":\"ChangedAgain2026\"}"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.code").value("INVALID_RESET_TOKEN"));
+    }
+
+    @Test
+    @Order(8)
     void openApi31IsPublished() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.openapi").value(org.hamcrest.Matchers.startsWith("3.1")))
                 .andExpect(jsonPath("$.paths['/api/admin/videos']").exists())
-                .andExpect(jsonPath("$.paths['/api/user/courses']").exists());
+                .andExpect(jsonPath("$.paths['/api/user/courses']").exists())
+                .andExpect(jsonPath("$.paths['/api/user/session'].get").exists())
+                .andExpect(jsonPath("$.paths['/api/user/session'].delete").exists())
+                .andExpect(jsonPath("$.paths['/api/user/password-resets']").exists());
     }
 
     private String tokenFor(String path, String account, String password) throws Exception {

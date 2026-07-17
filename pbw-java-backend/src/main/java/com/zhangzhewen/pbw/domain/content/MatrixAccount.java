@@ -7,6 +7,11 @@ public record MatrixAccount(
         String platformName,
         String platformLogo,
         String accountUrl,
-        String intro
+        String intro,
+        String followerCountText,
+        String colorClass
 ) {
+    public MatrixAccount(BaseEntity base, String platformName, String platformLogo, String accountUrl, String intro) {
+        this(base, platformName, platformLogo, accountUrl, intro, null, "bg-blue-500");
+    }
 }

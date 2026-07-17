@@ -44,7 +44,8 @@ public class AdminMatrixAccountApplicationService {
     @Transactional
     public AdminMatrixAccountVO update(Long id, AdminMatrixAccountRequest request) {
         MatrixAccount old = requiredActive(id);
-        MatrixAccount saved = gateway.update(fromRequest(old.base(), request));
+        MatrixAccount requested = fromRequest(old.base(), request);
+        MatrixAccount saved = gateway.update(new MatrixAccount(requested.base(), requested.platformName(), requested.platformLogo(), requested.accountUrl(), requested.intro(), old.followerCountText(), old.colorClass()));
         audit.success("UPDATE", "matrix_account", id);
         return toVO(saved);
     }
@@ -52,7 +53,7 @@ public class AdminMatrixAccountApplicationService {
     @Transactional
     public AdminMatrixAccountVO copy(Long id) {
         MatrixAccount old = required(id);
-        MatrixAccount saved = gateway.insert(new MatrixAccount(AdminApplicationSupport.newBase(), AdminApplicationSupport.copyName(old.platformName(), 255), old.platformLogo(), old.accountUrl(), old.intro()));
+        MatrixAccount saved = gateway.insert(new MatrixAccount(AdminApplicationSupport.newBase(), AdminApplicationSupport.copyName(old.platformName(), 255), old.platformLogo(), old.accountUrl(), old.intro(), old.followerCountText(), old.colorClass()));
         audit.success("COPY", "matrix_account", saved.base().id());
         return toVO(saved);
     }

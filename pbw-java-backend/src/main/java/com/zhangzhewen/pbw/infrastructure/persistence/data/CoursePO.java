@@ -15,6 +15,13 @@ public class CoursePO extends BasePO {
     private String courseIntro;
     private BigDecimal coursePrice;
     private Boolean isOnline;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private String duration;
+    private Integer lessonCount;
+    private String features;
+    private String colorClass;
+    private String iconName;
+    private Boolean userVisible;
 
     public String getCourseName() { return courseName; }
     public void setCourseName(String value) { this.courseName = value; }
@@ -26,4 +33,16 @@ public class CoursePO extends BasePO {
     public void setCoursePrice(BigDecimal value) { this.coursePrice = value; }
     public Boolean getIsOnline() { return isOnline; }
     public void setIsOnline(Boolean value) { this.isOnline = value; }
+    public String getDuration() { return duration; }
+    public void setDuration(String value) { this.duration = value; }
+    public Integer getLessonCount() { return lessonCount; }
+    public void setLessonCount(Integer value) { this.lessonCount = value; }
+    public String getFeatures() { return features; }
+    public void setFeatures(String value) { this.features = value; }
+    public String getColorClass() { return colorClass; }
+    public void setColorClass(String value) { this.colorClass = value; }
+    public String getIconName() { return iconName; }
+    public void setIconName(String value) { this.iconName = value; }
+    public Boolean getUserVisible() { return userVisible; }
+    public void setUserVisible(Boolean value) { this.userVisible = value; }
 }

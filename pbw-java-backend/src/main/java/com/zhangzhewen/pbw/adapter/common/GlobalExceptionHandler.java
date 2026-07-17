@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
     private static final Map<String, Integer> STATUS = Map.ofEntries(
             Map.entry("BAD_REQUEST", 400), Map.entry("UNAUTHORIZED", 401), Map.entry("FORBIDDEN", 403),
             Map.entry("RESOURCE_NOT_FOUND", 404), Map.entry("RESOURCE_CONFLICT", 409), Map.entry("RESOURCE_DELETED", 409),
-            Map.entry("FILE_TOO_LARGE", 413), Map.entry("UNSUPPORTED_MEDIA_TYPE", 415), Map.entry("VALIDATION_ERROR", 422),
+            Map.entry("FILE_TOO_LARGE", 413), Map.entry("UNSUPPORTED_MEDIA_TYPE", 415), Map.entry("VALIDATION_ERROR", 422), Map.entry("INVALID_RESET_TOKEN", 422),
             Map.entry("TOO_MANY_REQUESTS", 429), Map.entry("INTERNAL_ERROR", 500)
     );
 
@@ -96,6 +96,7 @@ public class GlobalExceptionHandler {
             case "FILE_TOO_LARGE" -> "文件过大";
             case "UNSUPPORTED_MEDIA_TYPE" -> "媒体类型不支持";
             case "TOO_MANY_REQUESTS" -> "请求过于频繁";
+            case "INVALID_RESET_TOKEN" -> "密码重置令牌无效";
             default -> "请求参数校验失败";
         };
     }

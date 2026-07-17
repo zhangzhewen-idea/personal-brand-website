@@ -12,6 +12,10 @@ public class VideoPO extends BasePO {
     private String videoUrl;
     @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String videoCover;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private String platformName;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private String playCountText;
 
     public String getVideoTitle() { return videoTitle; }
     public void setVideoTitle(String value) { this.videoTitle = value; }
@@ -21,4 +25,8 @@ public class VideoPO extends BasePO {
     public void setVideoUrl(String value) { this.videoUrl = value; }
     public String getVideoCover() { return videoCover; }
     public void setVideoCover(String value) { this.videoCover = value; }
+    public String getPlatformName() { return platformName; }
+    public void setPlatformName(String value) { this.platformName = value; }
+    public String getPlayCountText() { return playCountText; }
+    public void setPlayCountText(String value) { this.playCountText = value; }
 }
