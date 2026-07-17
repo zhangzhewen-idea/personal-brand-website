@@ -22,7 +22,7 @@ const handleLogout = async () => { await store.logout() }
           <Video class="h-8 w-8 text-blue-600" /><span class="text-xl font-semibold">影像创作者</span>
         </RouterLink>
         <div class="hidden items-center gap-8 md:flex">
-          <RouterLink v-for="link in links" :key="link.name" :to="{ name: link.name }" class="text-sm text-gray-700 transition-colors hover:text-blue-600" active-class="!font-medium !text-blue-600">{{ link.label }}</RouterLink>
+          <RouterLink v-for="link in links" :key="link.name" :to="{ name: link.name }" class="text-sm text-gray-700 transition-colors hover:text-blue-600" exact-active-class="!font-medium !text-blue-600">{{ link.label }}</RouterLink>
         </div>
         <div v-if="currentUser" class="hidden items-center gap-3 md:flex"><span class="text-sm text-gray-700">{{ currentUser.nickname }}</span><button class="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" @click="handleLogout"><LogOut class="h-4 w-4" />退出</button></div>
         <RouterLink v-else :to="{ name: 'login' }" class="hidden rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-gray-50 md:block">登录</RouterLink>
@@ -33,7 +33,7 @@ const handleLogout = async () => { await store.logout() }
     </div>
     <div v-if="mobileMenuOpen" class="border-t border-gray-200 bg-white md:hidden">
       <div class="space-y-3 px-4 py-4">
-        <RouterLink v-for="link in links" :key="link.name" :to="{ name: link.name }" class="block py-2 text-sm text-gray-700" active-class="!font-medium !text-blue-600" @click="store.setMobileMenuOpen(false)">{{ link.label }}</RouterLink>
+        <RouterLink v-for="link in links" :key="link.name" :to="{ name: link.name }" class="block py-2 text-sm text-gray-700" exact-active-class="!font-medium !text-blue-600" @click="store.setMobileMenuOpen(false)">{{ link.label }}</RouterLink>
         <button v-if="currentUser" class="block w-full rounded-md border border-gray-300 px-3 py-2 text-center text-sm" @click="handleLogout(); store.setMobileMenuOpen(false)">退出 {{ currentUser.nickname }}</button>
         <RouterLink v-else :to="{ name: 'login' }" class="block w-full rounded-md border border-gray-300 px-3 py-2 text-center text-sm" @click="store.setMobileMenuOpen(false)">登录</RouterLink>
       </div>
