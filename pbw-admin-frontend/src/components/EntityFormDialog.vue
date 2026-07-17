@@ -14,29 +14,29 @@ import type {
 
 interface EntityFormModel {
   videoTitle: string
-  videoIntro: string
+  videoIntro: string | null
   videoUrl: string | null
   videoCover: string | null
   materialTitle: string
   materialPhoto: string | null
-  materialIntro: string
+  materialIntro: string | null
   price: number
   stock: number
   specifications: ProductSpecification[]
-  netdiskUrl: string
+  netdiskUrl: string | null
   platformName: string
   platformLogo: string | null
-  accountUrl: string
-  intro: string
+  accountUrl: string | null
+  intro: string | null
   courseName: string
-  courseTag: string
-  courseIntro: string
+  courseTag: string | null
+  courseIntro: string | null
   coursePrice: number
   isOnline: boolean
   nickname: string
   account: string
   password: string
-  email: string
+  email: string | null
   avatar: string | null
   role: UserRole
 }
@@ -46,6 +46,7 @@ const props = defineProps<{
   config: EntityPageConfig
   mode: 'create' | 'edit' | 'view'
   record: ManagementRecord | null
+  submitting: boolean
 }>()
 
 const emit = defineEmits<{
@@ -54,7 +55,6 @@ const emit = defineEmits<{
 }>()
 
 const formRef = ref<FormInstance>()
-const submitting = ref(false)
 
 const emptyForm = (): EntityFormModel => ({
   videoTitle: '',
@@ -154,7 +154,8 @@ const removeSpecification = (index: number) => {
   if (!form.specifications.length) addSpecification()
 }
 
-const asNullable = (value: string | null) => value || null
+const trimmed = (value: string | null) => value?.trim() || ''
+const asNullable = (value: string | null) => trimmed(value) || null
 
 const buildRecord = (): EntityFormSubmission => {
   const now = new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
@@ -169,48 +170,48 @@ const buildRecord = (): EntityFormSubmission => {
     case 'video':
       return {
         ...base,
-        videoTitle: form.videoTitle.trim(),
-        videoIntro: asNullable(form.videoIntro.trim()),
+        videoTitle: trimmed(form.videoTitle),
+        videoIntro: asNullable(form.videoIntro),
         videoUrl: form.videoUrl || '',
         videoCover: form.videoCover,
       }
     case 'material':
       return {
         ...base,
-        materialTitle: form.materialTitle.trim(),
+        materialTitle: trimmed(form.materialTitle),
         materialPhoto: form.materialPhoto,
-        materialIntro: asNullable(form.materialIntro.trim()),
+        materialIntro: asNullable(form.materialIntro),
         price: Number(form.price),
         stock: Number(form.stock),
         specifications: form.specifications
           .filter((item) => item.name.trim() && item.value.trim())
           .map((item) => ({ name: item.name.trim(), value: item.value.trim() })),
-        netdiskUrl: asNullable(form.netdiskUrl.trim()),
+        netdiskUrl: asNullable(form.netdiskUrl),
       }
     case 'matrix':
       return {
         ...base,
-        platformName: form.platformName.trim(),
+        platformName: trimmed(form.platformName),
         platformLogo: form.platformLogo,
-        accountUrl: asNullable(form.accountUrl.trim()),
-        intro: asNullable(form.intro.trim()),
+        accountUrl: asNullable(form.accountUrl),
+        intro: asNullable(form.intro),
       }
     case 'course':
       return {
         ...base,
-        courseName: form.courseName.trim(),
-        courseTag: asNullable(form.courseTag.trim()),
-        courseIntro: asNullable(form.courseIntro.trim()),
+        courseName: trimmed(form.courseName),
+        courseTag: asNullable(form.courseTag),
+        courseIntro: asNullable(form.courseIntro),
         coursePrice: Number(form.coursePrice),
         isOnline: form.isOnline,
       }
     case 'user':
       return {
         ...base,
-        nickname: form.nickname.trim(),
-        account: form.account.trim(),
+        nickname: trimmed(form.nickname),
+        account: trimmed(form.account),
         password: form.password,
-        email: asNullable(form.email.trim()),
+        email: asNullable(form.email),
         avatar: form.avatar,
         role: form.role,
         passwordConfigured:
@@ -233,10 +234,7 @@ const handleSubmit = async () => {
     return
   }
 
-  submitting.value = true
   emit('submit', buildRecord())
-  submitting.value = false
-  visible.value = false
 }
 </script>
 

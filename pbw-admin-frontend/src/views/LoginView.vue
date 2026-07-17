@@ -6,12 +6,16 @@ import { ElMessage } from 'element-plus'
 import { ArrowRight, Check, Collection, Lock, User } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { getApiErrorMessage } from '@/api/client'
+import { authApi } from '@/api/modules/auth'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
+const resetDialogVisible = ref(false)
+const resetLoading = ref(false)
+const resetAccountOrEmail = ref('')
 
 const form = reactive({
   account: 'admin',
@@ -40,6 +44,30 @@ const handleSubmit = async () => {
     ElMessage.error(getApiErrorMessage(error, '登录失败，请稍后重试'))
   } finally {
     loading.value = false
+  }
+}
+
+const openResetDialog = () => {
+  resetAccountOrEmail.value = form.account.trim()
+  resetDialogVisible.value = true
+}
+
+const requestPasswordReset = async () => {
+  const accountOrEmail = resetAccountOrEmail.value.trim()
+  if (!accountOrEmail) {
+    ElMessage.warning('请输入管理员账号或邮箱')
+    return
+  }
+
+  resetLoading.value = true
+  try {
+    await authApi.requestPasswordReset(accountOrEmail)
+    resetDialogVisible.value = false
+    ElMessage.success('重置申请已提交，请查看管理员邮箱中的重置链接')
+  } catch (error) {
+    ElMessage.error(getApiErrorMessage(error, '提交重置申请失败，请稍后重试'))
+  } finally {
+    resetLoading.value = false
   }
 }
 </script>
@@ -98,7 +126,7 @@ const handleSubmit = async () => {
 
           <div class="login-options">
             <el-checkbox v-model="form.remember">记住登录状态</el-checkbox>
-            <button type="button">忘记密码？</button>
+            <button type="button" @click="openResetDialog">忘记密码？</button>
           </div>
 
           <el-button class="login-button" type="primary" size="large" :loading="loading" @click="handleSubmit">
@@ -110,6 +138,33 @@ const handleSubmit = async () => {
         <p class="login-footer">PBW Studio · 内容管理系统</p>
       </div>
     </section>
+
+    <el-dialog
+      v-model="resetDialogVisible"
+      title="找回管理员密码"
+      width="420px"
+      append-to-body
+      destroy-on-close
+      :close-on-click-modal="false"
+    >
+      <p class="reset-dialog__description">
+        输入管理员账号或已绑定邮箱。若账号存在，系统会发送一封包含重置链接的邮件。
+      </p>
+      <el-input
+        v-model="resetAccountOrEmail"
+        :prefix-icon="User"
+        size="large"
+        placeholder="管理员账号或邮箱"
+        aria-label="管理员账号或邮箱"
+        @keyup.enter="requestPasswordReset"
+      />
+      <template #footer>
+        <el-button @click="resetDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="resetLoading" @click="requestPasswordReset">
+          发送重置邮件
+        </el-button>
+      </template>
+    </el-dialog>
   </main>
 </template>
 
@@ -381,6 +436,13 @@ const handleSubmit = async () => {
   color: #716c8c;
   font-size: 10px;
   text-align: center;
+}
+
+.reset-dialog__description {
+  margin: 0 0 18px;
+  color: #606266;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 @media (max-width: 980px) {

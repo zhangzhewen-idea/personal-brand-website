@@ -36,7 +36,4 @@ export const createCrudApi = <T extends { id: number }, C = Omit<T, 'id'>, U = C
   duplicate(id: number) {
     return apiClient.post<T>(`${resource}/${id}/copies`)
   },
-  restore(id: number) {
-    return apiClient.patch<T>(`${resource}/${id}`, { isDeleted: false })
-  },
 })

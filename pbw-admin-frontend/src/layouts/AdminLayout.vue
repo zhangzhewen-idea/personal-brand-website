@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowDown,
@@ -24,6 +24,9 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const collapsed = ref(false)
+const searchVisible = ref(false)
+const searchKeyword = ref('')
+const searchInputRef = ref<{ focus: () => void }>()
 
 const currentTitle = computed(() => String(route.meta.title || '工作台'))
 
@@ -36,6 +39,35 @@ const menuItems = [
   { index: '/courses', label: '课程管理', icon: Reading },
   { index: '/users', label: '用户管理', icon: User },
 ]
+
+const filteredMenuItems = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase()
+  return keyword
+    ? menuItems.filter((item) => item.label.toLowerCase().includes(keyword))
+    : menuItems
+})
+
+const openGlobalSearch = () => {
+  searchKeyword.value = ''
+  searchVisible.value = true
+  void nextTick(() => searchInputRef.value?.focus())
+}
+
+const navigateTo = async (path?: string) => {
+  if (!path) return
+  searchVisible.value = false
+  await router.push(path)
+}
+
+const handleGlobalShortcut = (event: KeyboardEvent) => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    openGlobalSearch()
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', handleGlobalShortcut))
+onBeforeUnmount(() => window.removeEventListener('keydown', handleGlobalShortcut))
 
 const handleUserCommand = async (command: string) => {
   if (command === 'logout') {
@@ -96,7 +128,7 @@ const handleUserCommand = async (command: string) => {
         </div>
 
         <div class="topbar__right">
-          <button class="topbar-search" type="button">
+          <button class="topbar-search" type="button" @click="openGlobalSearch">
             <el-icon><Search /></el-icon>
             <span>搜索功能或页面</span>
             <kbd>⌘ K</kbd>
@@ -129,6 +161,37 @@ const handleUserCommand = async (command: string) => {
         <RouterView />
       </main>
     </section>
+
+    <el-dialog
+      v-model="searchVisible"
+      class="global-search-dialog"
+      title="快速导航"
+      width="460px"
+      append-to-body
+    >
+      <el-input
+        ref="searchInputRef"
+        v-model="searchKeyword"
+        :prefix-icon="Search"
+        size="large"
+        placeholder="搜索功能或页面"
+        aria-label="搜索功能或页面"
+        @keyup.enter="navigateTo(filteredMenuItems[0]?.index)"
+      />
+      <div class="global-search-results">
+        <button
+          v-for="item in filteredMenuItems"
+          :key="item.index"
+          type="button"
+          @click="navigateTo(item.index)"
+        >
+          <el-icon><component :is="item.icon" /></el-icon>
+          <span>{{ item.label }}</span>
+          <small>打开</small>
+        </button>
+        <p v-if="!filteredMenuItems.length">没有匹配的页面</p>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -461,6 +524,36 @@ const handleUserCommand = async (command: string) => {
   box-sizing: border-box;
   padding: 28px;
 }
+
+.global-search-results {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.global-search-results button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid #e7ebf1;
+  border-radius: 9px;
+  background: #fff;
+  color: #344054;
+  cursor: pointer;
+  text-align: left;
+}
+
+.global-search-results button:hover {
+  border-color: #b9cdfd;
+  background: #f5f8ff;
+  color: var(--pbw-blue);
+}
+
+.global-search-results button span { flex: 1; }
+.global-search-results button small { color: #98a2b3; }
+.global-search-results > p { margin: 18px 0 4px; color: #98a2b3; text-align: center; }
 
 .is-collapsed .sidebar {
   width: 78px;

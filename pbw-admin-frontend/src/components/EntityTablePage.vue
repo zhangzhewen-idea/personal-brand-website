@@ -9,7 +9,6 @@ import {
   Picture,
   Plus,
   Refresh,
-  RefreshLeft,
   Search,
 } from '@element-plus/icons-vue'
 import EntityFormDialog from '@/components/EntityFormDialog.vue'
@@ -30,7 +29,6 @@ const props = defineProps<{
 }>()
 
 const keyword = ref('')
-const status = ref<'all' | 'normal' | 'deleted'>('all')
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
@@ -39,6 +37,8 @@ const loading = ref(false)
 const dialogVisible = ref(false)
 const dialogMode = ref<'create' | 'edit' | 'view'>('create')
 const editingRecord = ref<ManagementRecord | null>(null)
+const failedImages = ref(new Set<string>())
+const saving = ref(false)
 
 interface EntityApi {
   getPage(params: PageQuery): Promise<{ data: PageResult<ManagementRecord> }>
@@ -47,7 +47,6 @@ interface EntityApi {
   update(id: number, data: Record<string, unknown>): Promise<unknown>
   remove(id: number): Promise<unknown>
   duplicate(id: number): Promise<unknown>
-  restore(id: number): Promise<unknown>
 }
 
 const api = entityApis[props.config.key] as unknown as EntityApi
@@ -59,7 +58,7 @@ const loadRows = async () => {
       page: currentPage.value,
       pageSize: pageSize.value,
       keyword: keyword.value.trim() || undefined,
-      status: status.value,
+      status: 'normal',
       sortBy: 'createTime',
       sortOrder: 'desc',
     })
@@ -75,9 +74,19 @@ const loadRows = async () => {
 const getValue = (row: ManagementRecord, field: string) =>
   (row as unknown as Record<string, unknown>)[field]
 
+const imageSource = (value: unknown) => typeof value === 'string' ? value : ''
+const isImageAvailable = (value: unknown) => {
+  const source = imageSource(value)
+  return Boolean(source) && !failedImages.value.has(source)
+}
+const handleImageError = (value: unknown) => {
+  const source = imageSource(value)
+  if (!source) return
+  failedImages.value = new Set([...failedImages.value, source])
+}
+
 const resetFilters = () => {
   keyword.value = ''
-  status.value = 'all'
   currentPage.value = 1
 }
 
@@ -123,6 +132,8 @@ const toPayload = (record: EntityFormSubmission) => {
 }
 
 const saveRecord = async (record: EntityFormSubmission) => {
+  if (saving.value) return
+  saving.value = true
   try {
     if (dialogMode.value === 'create') {
       await api.create(toPayload(record))
@@ -135,6 +146,8 @@ const saveRecord = async (record: EntityFormSubmission) => {
     await loadRows()
   } catch (error) {
     ElMessage.error(getApiErrorMessage(error, dialogMode.value === 'create' ? '新增失败' : '更新失败'))
+  } finally {
+    saving.value = false
   }
 }
 
@@ -149,35 +162,32 @@ const duplicateRecord = async (row: ManagementRecord) => {
   }
 }
 
-const toggleDeleted = async (row: ManagementRecord) => {
-  if (!row.isDeleted) {
-    try {
-      await ElMessageBox.confirm(
-        '该记录将标记为已删除，可通过状态筛选后恢复。',
-        '确认标记删除',
-        {
-          type: 'warning',
-          confirmButtonText: '确认删除',
-          cancelButtonText: '取消',
-        },
-      )
-    } catch {
-      return
-    }
+const deleteRecord = async (row: ManagementRecord) => {
+  try {
+    await ElMessageBox.confirm(
+      '删除后该记录将不再显示，且无法从管理页面恢复。',
+      '确认删除记录',
+      {
+        type: 'warning',
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消',
+      },
+    )
+  } catch {
+    return
   }
 
   try {
-    if (row.isDeleted) await api.restore(row.id)
-    else await api.remove(row.id)
-    ElMessage.success(row.isDeleted ? '记录已恢复' : '记录已标记删除')
+    await api.remove(row.id)
+    ElMessage.success('记录已删除')
     await loadRows()
   } catch (error) {
-    ElMessage.error(getApiErrorMessage(error, row.isDeleted ? '恢复失败' : '删除失败'))
+    ElMessage.error(getApiErrorMessage(error, '删除失败'))
   }
 }
 
 interface RowCommand {
-  action: 'duplicate' | 'toggleDeleted'
+  action: 'duplicate' | 'delete'
   row: ManagementRecord
 }
 
@@ -186,7 +196,7 @@ const handleRowCommand = (command: RowCommand) => {
     void duplicateRecord(command.row)
     return
   }
-  void toggleDeleted(command.row)
+  void deleteRecord(command.row)
 }
 
 const shortUrl = (value: unknown) => {
@@ -202,7 +212,7 @@ watch(keyword, () => {
     void loadRows()
   }, 300)
 })
-watch([status, pageSize], () => {
+watch(pageSize, () => {
   currentPage.value = 1
   void loadRows()
 })
@@ -233,11 +243,6 @@ onMounted(() => void loadRows())
             :placeholder="config.searchPlaceholder"
             clearable
           />
-          <el-select v-model="status" class="status-select" aria-label="数据状态">
-            <el-option label="全部状态" value="all" />
-            <el-option label="正常数据" value="normal" />
-            <el-option label="已删除" value="deleted" />
-          </el-select>
           <el-button :icon="Refresh" @click="resetFilters">重置</el-button>
         </div>
         <span class="record-count">共 {{ total }} 条记录</span>
@@ -255,14 +260,15 @@ onMounted(() => void loadRows())
         >
           <template #default="{ row }">
             <div v-if="column.format === 'image'" class="media-cell">
-              <span class="media-cell__preview" :class="{ 'is-empty': !getValue(row, column.field) }">
-                <el-icon><Picture /></el-icon>
+              <span class="media-cell__preview" :class="{ 'is-empty': !isImageAvailable(getValue(row, column.field)) }">
+                <img
+                  v-if="isImageAvailable(getValue(row, column.field))"
+                  :src="imageSource(getValue(row, column.field))"
+                  :alt="column.label"
+                  @error="handleImageError(getValue(row, column.field))"
+                />
+                <el-icon v-else><Picture /></el-icon>
               </span>
-              <el-tooltip :content="String(getValue(row, column.field) || '未设置')" placement="top">
-                <span class="media-cell__label">
-                  {{ getValue(row, column.field) ? '已配置' : '未配置' }}
-                </span>
-              </el-tooltip>
             </div>
             <el-link
               v-else-if="column.format === 'url'"
@@ -334,10 +340,10 @@ onMounted(() => void loadRows())
                     </el-dropdown-item>
                     <el-dropdown-item
                       divided
-                      :command="{ action: 'toggleDeleted', row }"
-                      :icon="row.isDeleted ? RefreshLeft : Delete"
+                      :command="{ action: 'delete', row }"
+                      :icon="Delete"
                     >
-                      {{ row.isDeleted ? '恢复记录' : '标记删除' }}
+                      删除记录
                     </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
@@ -364,6 +370,7 @@ onMounted(() => void loadRows())
       :config="config"
       :mode="dialogMode"
       :record="editingRecord"
+      :submitting="saving"
       @submit="saveRecord"
     />
   </section>
@@ -392,10 +399,6 @@ onMounted(() => void loadRows())
   width: 292px;
 }
 
-.status-select {
-  width: 132px;
-}
-
 .record-count {
   flex: none;
   color: var(--pbw-muted);
@@ -409,7 +412,6 @@ onMounted(() => void loadRows())
 .media-cell {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
 }
 
 .media-cell__preview {
@@ -424,10 +426,7 @@ onMounted(() => void loadRows())
   font-size: 17px;
 }
 
-.media-cell__label {
-  color: var(--pbw-muted);
-  font-size: 12px;
-}
+.media-cell__preview img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
 
 .media-cell__preview.is-empty {
   border-style: dashed;

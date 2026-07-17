@@ -7,7 +7,6 @@ import {
   Link,
   Message,
   Picture,
-  Plus,
   Pointer,
   User,
   VideoPlay,
@@ -24,7 +23,6 @@ const formatNumber = (value: number) => new Intl.NumberFormat('zh-CN').format(va
 const basicInfo = ref<BasicInfo | null>(null)
 const loading = ref(false)
 const dialogVisible = ref(false)
-const dialogMode = ref<'create' | 'edit'>('edit')
 const dialogRecord = ref<BasicInfo | null>(null)
 
 const mediaFields = computed(() => [
@@ -36,9 +34,8 @@ const mediaFields = computed(() => [
   { label: '观影日常照片', field: 'dailyMovieWatchingPhoto', value: basicInfo.value?.dailyMovieWatchingPhoto, icon: Film, kind: 'IMAGE' },
 ])
 
-const openDialog = (mode: 'create' | 'edit') => {
-  dialogMode.value = mode
-  dialogRecord.value = mode === 'edit' && basicInfo.value ? cloneData(basicInfo.value) : null
+const openDialog = () => {
+  dialogRecord.value = basicInfo.value ? cloneData(basicInfo.value) : null
   dialogVisible.value = true
 }
 
@@ -49,14 +46,12 @@ const toPayload = (record: BasicInfo): BasicInfoPayload => {
 
 const saveBasicInfo = async (record: BasicInfo) => {
   try {
-    const { data } = dialogMode.value === 'create'
-      ? await basicInfoApi.create(toPayload(record))
-      : await basicInfoApi.update(record.id, toPayload(record))
+    const { data } = await basicInfoApi.update(record.id, toPayload(record))
     basicInfo.value = data
     dialogVisible.value = false
-    ElMessage.success(dialogMode.value === 'create' ? '基本信息新增成功' : '基本信息已更新')
+    ElMessage.success('基本信息已更新')
   } catch (error) {
-    ElMessage.error(getApiErrorMessage(error, dialogMode.value === 'create' ? '新增基本信息失败' : '更新基本信息失败'))
+    ElMessage.error(getApiErrorMessage(error, '更新基本信息失败'))
   }
 }
 
@@ -82,8 +77,7 @@ onMounted(() => void loadBasicInfo())
       title="基本信息管理"
       description="维护个人品牌介绍、核心数据、媒体素材与联系方式。"
     >
-      <el-button :icon="Plus" @click="openDialog('create')">新增基本信息</el-button>
-      <el-button type="primary" :icon="EditPen" :disabled="!basicInfo" @click="openDialog('edit')">编辑基本信息</el-button>
+      <el-button type="primary" :icon="EditPen" :disabled="!basicInfo" @click="openDialog">编辑基本信息</el-button>
     </PageHeading>
 
     <div class="metric-grid">
@@ -153,12 +147,21 @@ onMounted(() => void loadBasicInfo())
         <div v-for="(item, index) in mediaFields" :key="item.field" class="media-item">
           <div class="media-preview" :class="`media-preview--${(index % 3) + 1}`">
             <span>{{ item.kind }}</span>
-            <el-icon><component :is="item.icon" /></el-icon>
+            <video
+              v-if="item.kind === 'VIDEO' && item.value"
+              :src="item.value"
+              :aria-label="item.label"
+              autoplay
+              muted
+              loop
+              playsinline
+            />
+            <img v-else-if="item.value" :src="item.value" :alt="item.label" />
+            <el-icon v-else><component :is="item.icon" /></el-icon>
           </div>
           <div class="media-copy">
             <strong>{{ item.label }}</strong>
             <small>{{ item.field }}</small>
-            <p>{{ item.value }}</p>
           </div>
         </div>
       </div>
@@ -166,7 +169,7 @@ onMounted(() => void loadBasicInfo())
 
     <BasicInfoDialog
       v-model="dialogVisible"
-      :mode="dialogMode"
+      mode="edit"
       :record="dialogRecord"
       @submit="saveBasicInfo"
     />
@@ -272,11 +275,13 @@ onMounted(() => void loadBasicInfo())
 .media-preview--2 { background: linear-gradient(135deg, #e8eefb, #f4f6fb); }
 .media-preview--3 { background: linear-gradient(135deg, #e7f0ef, #f3f8f7); }
 .media-preview > span { position: absolute; top: 8px; left: 9px; color: #8b9aaf; font-size: 7px; font-weight: 750; letter-spacing: .13em; }
+.media-preview > span { z-index: 1; padding: 3px 5px; border-radius: 4px; background: rgba(15, 23, 42, .58); color: white; }
+.media-preview img,
+.media-preview video { width: 100%; height: 100%; object-fit: cover; }
 .media-preview :deep(svg) { width: 22px; }
 .media-copy { padding: 12px; }
 .media-copy strong { display: block; color: #455165; font-size: 11px; }
 .media-copy small { display: block; margin-top: 3px; color: #a7b1bf; font-size: 8px; }
-.media-copy p { overflow: hidden; margin: 9px 0 0; color: #8b96a6; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 
 @media (max-width: 1080px) {
   .info-grid { grid-template-columns: 1fr; }

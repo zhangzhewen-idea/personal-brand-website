@@ -16,7 +16,6 @@ export const videoPageConfig: EntityPageConfig = {
     { field: 'videoUrl', label: '视频地址', minWidth: 220, format: 'url' },
     { field: 'createTime', label: '创建时间', width: 174, format: 'datetime' },
     { field: 'updateTime', label: '更新时间', width: 174, format: 'datetime' },
-    { field: 'isDeleted', label: '数据状态', width: 104, format: 'boolean' },
   ],
 }
 
@@ -39,7 +38,6 @@ export const materialPageConfig: EntityPageConfig = {
     { field: 'netdiskUrl', label: '网盘地址', minWidth: 220, format: 'url' },
     { field: 'createTime', label: '创建时间', width: 174, format: 'datetime' },
     { field: 'updateTime', label: '更新时间', width: 174, format: 'datetime' },
-    { field: 'isDeleted', label: '数据状态', width: 104, format: 'boolean' },
   ],
 }
 
@@ -59,7 +57,6 @@ export const matrixPageConfig: EntityPageConfig = {
     { field: 'accountUrl', label: '账号地址', minWidth: 240, format: 'url' },
     { field: 'createTime', label: '创建时间', width: 174, format: 'datetime' },
     { field: 'updateTime', label: '更新时间', width: 174, format: 'datetime' },
-    { field: 'isDeleted', label: '数据状态', width: 104, format: 'boolean' },
   ],
 }
 
@@ -80,7 +77,6 @@ export const coursePageConfig: EntityPageConfig = {
     { field: 'isOnline', label: '上线状态', width: 112, format: 'online' },
     { field: 'createTime', label: '创建时间', width: 174, format: 'datetime' },
     { field: 'updateTime', label: '更新时间', width: 174, format: 'datetime' },
-    { field: 'isDeleted', label: '数据状态', width: 104, format: 'boolean' },
   ],
 }
 
@@ -102,6 +98,5 @@ export const userPageConfig: EntityPageConfig = {
     { field: 'role', label: '角色', width: 104, format: 'role' },
     { field: 'createTime', label: '创建时间', width: 174, format: 'datetime' },
     { field: 'updateTime', label: '更新时间', width: 174, format: 'datetime' },
-    { field: 'isDeleted', label: '数据状态', width: 104, format: 'boolean' },
   ],
 }

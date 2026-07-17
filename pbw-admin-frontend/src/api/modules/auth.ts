@@ -12,6 +12,11 @@ export interface LoginResponse {
   role: '管理员'
 }
 
+export interface PasswordResetRequestResponse {
+  accepted: boolean
+  expiresIn: number
+}
+
 export const authApi = {
   login(payload: LoginPayload) {
     return apiClient.post<LoginResponse>('/admin/session', payload)
@@ -21,5 +26,10 @@ export const authApi = {
   },
   logout() {
     return apiClient.delete<void>('/admin/session')
+  },
+  requestPasswordReset(accountOrEmail: string) {
+    return apiClient.post<PasswordResetRequestResponse>('/admin/password-reset-requests', {
+      accountOrEmail,
+    })
   },
 }

@@ -4,6 +4,7 @@ import com.zhangzhewen.pbw.domain.shared.BusinessException;
 import com.zhangzhewen.pbw.domain.shared.FieldViolation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.apache.catalina.connector.ClientAbortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -67,6 +68,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     ResponseEntity<ApiProblem> handleConflict(DataIntegrityViolationException exception, HttpServletRequest request) {
         return response(409, "RESOURCE_CONFLICT", "资源冲突", "唯一字段冲突或数据状态不允许该操作", List.of(), request);
+    }
+
+    @ExceptionHandler(ClientAbortException.class)
+    void handleClientAbort(ClientAbortException exception, HttpServletRequest request) {
+        log.debug("客户端已中断媒体传输: path={}", request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
