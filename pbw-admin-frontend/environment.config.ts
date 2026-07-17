@@ -5,6 +5,8 @@ const backendPorts: Record<AppEnvironment, number> = {
   prod: 8088,
 }
 
+const productionMediaBaseUrl = 'https://pwb-backend.harmonies.cc'
+
 export function getEnvironmentConfig(mode: string) {
   if (mode !== 'dev' && mode !== 'prod') {
     throw new Error(`不支持的运行环境: ${mode}`)
@@ -15,6 +17,7 @@ export function getEnvironmentConfig(mode: string) {
 
   return {
     apiBaseUrl: `${backendTarget}/api`,
+    mediaBaseUrl: mode === 'prod' ? productionMediaBaseUrl : backendTarget,
     backendTarget,
     backendPort,
   }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PlaceholderModal from './PlaceholderModal.vue'
+import { resolveMediaUrl } from '@/utils/media-url'
 
 defineProps<{ open: boolean; title: string; videoUrl: string }>()
 defineEmits<{ close: [] }>()
@@ -9,7 +10,7 @@ defineEmits<{ close: [] }>()
   <PlaceholderModal :open="open" :title="title" @close="$emit('close')">
     <video
       v-if="open && videoUrl"
-      :src="videoUrl"
+      :src="resolveMediaUrl(videoUrl)"
       controls
       autoplay
       playsinline

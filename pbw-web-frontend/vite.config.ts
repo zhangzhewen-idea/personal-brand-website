@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
     plugins: [vue(), tailwindcss()],
     define: {
       'import.meta.env.VITE_API_BASE_URL': JSON.stringify(environment.apiBaseUrl),
+      'import.meta.env.VITE_MEDIA_BASE_URL': JSON.stringify(environment.mediaBaseUrl),
       'import.meta.env.VITE_APP_ENV': JSON.stringify(mode),
       'import.meta.env.VITE_BACKEND_PORT': JSON.stringify(String(environment.backendPort)),
     },

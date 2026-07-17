@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PlaceholderModal from './PlaceholderModal.vue'
+import { resolveMediaUrl } from '@/utils/media-url'
 
 defineProps<{ open: boolean; title: string; description: string; qrCodeUrl: string | null }>()
 defineEmits<{ close: [] }>()
@@ -11,7 +12,7 @@ defineEmits<{ close: [] }>()
       <p class="text-gray-600">{{ description }}</p>
       <img
         v-if="qrCodeUrl"
-        :src="qrCodeUrl"
+        :src="resolveMediaUrl(qrCodeUrl)"
         alt="联系二维码"
         class="mx-auto h-64 w-64 rounded-xl bg-white object-contain p-3 shadow"
       />

@@ -18,6 +18,7 @@ import { getApiErrorMessage } from '@/api/client'
 import { basicInfoApi, type BasicInfoPayload } from '@/api/modules/basicInfo'
 import type { BasicInfo } from '@/types/database'
 import { cloneData } from '@/utils/cloneData'
+import { resolveMediaUrl } from '@/utils/media-url'
 
 const formatNumber = (value: number) => new Intl.NumberFormat('zh-CN').format(value)
 const basicInfo = ref<BasicInfo | null>(null)
@@ -149,14 +150,14 @@ onMounted(() => void loadBasicInfo())
             <span>{{ item.kind }}</span>
             <video
               v-if="item.kind === 'VIDEO' && item.value"
-              :src="item.value"
+              :src="resolveMediaUrl(item.value)"
               :aria-label="item.label"
               autoplay
               muted
               loop
               playsinline
             />
-            <img v-else-if="item.value" :src="item.value" :alt="item.label" />
+            <img v-else-if="item.value" :src="resolveMediaUrl(item.value)" :alt="item.label" />
             <el-icon v-else><component :is="item.icon" /></el-icon>
           </div>
           <div class="media-copy">

@@ -23,6 +23,7 @@ import type {
   ProductSpecification,
 } from '@/types/database'
 import { cloneData } from '@/utils/cloneData'
+import { resolveMediaUrl } from '@/utils/media-url'
 
 const props = defineProps<{
   config: EntityPageConfig
@@ -74,7 +75,7 @@ const loadRows = async () => {
 const getValue = (row: ManagementRecord, field: string) =>
   (row as unknown as Record<string, unknown>)[field]
 
-const imageSource = (value: unknown) => typeof value === 'string' ? value : ''
+const imageSource = (value: unknown) => typeof value === 'string' ? resolveMediaUrl(value) : ''
 const isImageAvailable = (value: unknown) => {
   const source = imageSource(value)
   return Boolean(source) && !failedImages.value.has(source)
@@ -92,6 +93,10 @@ const resetFilters = () => {
 
 const openUrl = (value: unknown) => {
   if (typeof value === 'string' && value) window.open(value, '_blank', 'noopener,noreferrer')
+}
+
+const openColumnUrl = (field: string, value: unknown) => {
+  openUrl(field === 'videoUrl' && typeof value === 'string' ? resolveMediaUrl(value) : value)
 }
 
 const getSpecifications = (value: unknown): ProductSpecification[] =>
@@ -275,7 +280,7 @@ onMounted(() => void loadRows())
               class="url-cell"
               underline="never"
               type="primary"
-              @click="openUrl(getValue(row, column.field))"
+              @click="openColumnUrl(column.field, getValue(row, column.field))"
             >
               <el-icon><Link /></el-icon>
               <span>{{ shortUrl(getValue(row, column.field)) }}</span>

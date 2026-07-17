@@ -5,6 +5,7 @@ import type { UploadFile } from 'element-plus'
 import { Delete, Picture, UploadFilled, VideoCamera } from '@element-plus/icons-vue'
 import { getApiErrorMessage } from '@/api/client'
 import { fileApi } from '@/api/modules/files'
+import { resolveMediaUrl } from '@/utils/media-url'
 
 const props = withDefaults(
   defineProps<{
@@ -31,7 +32,7 @@ const uploadProgress = ref(0)
 
 const accept = computed(() => (props.mediaType === 'video' ? 'video/*' : 'image/*'))
 const mediaLabel = computed(() => (props.mediaType === 'video' ? '视频' : '图片'))
-const previewSource = computed(() => objectUrl.value || props.modelValue)
+const previewSource = computed(() => objectUrl.value || resolveMediaUrl(props.modelValue))
 const fileName = computed(() => {
   if (selectedFileName.value) return selectedFileName.value
   if (!props.modelValue) return ''
