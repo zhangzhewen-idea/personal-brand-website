@@ -34,7 +34,7 @@ describe('ConsultingView', () => {
 
     expect(wrapper.text()).toContain('扫描二维码联系我们')
     expect(wrapper.get('img[alt="联系二维码"]').attributes('src'))
-      .toBe('http://localhost/contact-qr.jpg')
+      .toBe('/contact-qr.jpg')
   })
 
   it('所有咨询服务按钮都打开同一二维码弹窗', async () => {

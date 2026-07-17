@@ -34,7 +34,7 @@ describe('HomeView', () => {
 
     await wrapper.get('[aria-label="播放 测试视频"]').trigger('click')
 
-    expect(wrapper.get('video').attributes('src')).toBe('http://localhost/test.mp4')
+    expect(wrapper.get('video').attributes('src')).toBe('/test.mp4')
     expect(wrapper.text()).toContain('测试视频')
   })
 
@@ -46,7 +46,7 @@ describe('HomeView', () => {
 
     await fullVideoButton?.trigger('click')
 
-    expect(wrapper.get('video').attributes('src')).toBe('http://localhost/test.mp4')
+    expect(wrapper.get('video').attributes('src')).toBe('/test.mp4')
   })
 
   it('点击付费素材时显示联系二维码', async () => {
@@ -58,6 +58,6 @@ describe('HomeView', () => {
 
     expect(wrapper.text()).toContain('扫码联系询问价格并购买')
     expect(wrapper.get('img[alt="联系二维码"]').attributes('src'))
-      .toBe('http://localhost/contact-qr.jpg')
+      .toBe('/contact-qr.jpg')
   })
 })

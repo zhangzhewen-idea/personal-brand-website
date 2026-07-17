@@ -103,7 +103,7 @@ class ApiIntegrationTest {
     @Order(3)
     void videoCrudIsIdempotentAndDeleteRestoreAreRepeatable() throws Exception {
         String request = """
-                {"videoTitle":"测试视频","videoIntro":"接口测试","videoUrl":"https://cdn.example.com/videos/test.mp4","videoCover":null}
+                {"videoTitle":"测试视频","videoIntro":"接口测试","videoUrl":"/videos/test.mp4","videoCover":null}
                 """;
         String first = mockMvc.perform(post("/api/admin/videos")
                         .header("Authorization", bearer()).header("Idempotency-Key", "video-create-1")
@@ -119,7 +119,7 @@ class ApiIntegrationTest {
         assertThat(objectMapper.readTree(second).path("id").asLong()).isEqualTo(id);
 
         mockMvc.perform(put("/api/admin/videos/{id}", id).header("Authorization", bearer()).contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"videoTitle\":\"测试视频更新\",\"videoIntro\":null,\"videoUrl\":\"https://cdn.example.com/videos/test.mp4\",\"videoCover\":null}"))
+                        .content("{\"videoTitle\":\"测试视频更新\",\"videoIntro\":null,\"videoUrl\":\"/videos/test.mp4\",\"videoCover\":null}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.videoIntro").doesNotExist())
                 .andExpect(jsonPath("$.videoCover").doesNotExist());

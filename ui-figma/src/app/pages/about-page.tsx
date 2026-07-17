@@ -92,7 +92,7 @@ export function AboutPage() {
               <div className="relative">
                 <div className="w-80 h-80 rounded-2xl overflow-hidden shadow-2xl">
                   <ImageWithFallback
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+                    src="/images/author-photo-1.jpg"
                     alt="Creator Profile"
                     className="w-full h-full object-cover"
                   />
@@ -176,7 +176,7 @@ export function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             <div className="rounded-xl overflow-hidden shadow-lg">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1575320854760-bfffc3550640?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600"
+                src="/images/editing-desk-1.jpg"
                 alt="Workspace"
                 className="w-full h-64 object-cover"
               />
@@ -186,7 +186,7 @@ export function AboutPage() {
             </div>
             <div className="rounded-xl overflow-hidden shadow-lg">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1709316131422-35a5fb1e9eb2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600"
+                src="/images/asset-library-1.jpg"
                 alt="Production"
                 className="w-full h-64 object-cover"
               />
@@ -196,7 +196,7 @@ export function AboutPage() {
             </div>
             <div className="rounded-xl overflow-hidden shadow-lg">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1723396612574-961649793bb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600"
+                src="/images/daily-movie-1.jpg"
                 alt="Cinema"
                 className="w-full h-64 object-cover"
               />

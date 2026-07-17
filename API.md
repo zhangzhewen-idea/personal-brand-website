@@ -161,7 +161,7 @@ Content-Type: application/json
 - 逻辑删除不物理移除数据；删除后可在“已删除”筛选中查询并恢复；
 - 创建时间、更新时间和删除标记由服务端维护，创建和完整更新请求不得接收 `createTime`、`updateTime`、`isDeleted`；恢复接口的 `PATCH` 请求仅允许提交 `isDeleted=false`；
 - 列表默认按 `createTime desc, id desc` 排序；
-- 所有文本字段入库前去除首尾空白；URL 仅允许 `https`，本地开发环境可额外允许 `http://localhost`；
+- 所有文本字段入库前去除首尾空白；媒体路径使用以 `/` 开头的域名根目录相对路径，外部链接仅允许 `https`，本地开发环境可额外允许 `http://localhost`；
 - 密码只允许出现在写请求中，任何查询响应、日志和错误详情均不得返回明文密码或密码散列。
 
 ### 1.6 通用分页参数
@@ -293,7 +293,7 @@ Authorization: Bearer <accessToken>
   "nickname": "管理员",
   "account": "admin",
   "email": "admin@example.com",
-  "avatar": "https://cdn.example.com/avatars/admin.jpg",
+  "avatar": "/avatars/admin.jpg",
   "role": "管理员"
 }
 ```
@@ -481,7 +481,7 @@ Authorization: Bearer <accessToken>
       "id": 3,
       "videoTitle": "我最常用的剪辑节奏模板",
       "videoIntro": "分享节奏控制、转场和音效搭配的常用方法。",
-      "videoCover": "https://cdn.example.com/covers/video-cover-3.jpg",
+      "videoCover": "/covers/video-cover-3.jpg",
       "createTime": "2026-07-16T21:00:00+08:00"
     }
   ],
@@ -552,19 +552,19 @@ Authorization: Bearer <accessToken>
 ```json
 {
   "id": 1,
-  "homeCoverVideo": "https://cdn.example.com/videos/home-cover-1.mp4",
+  "homeCoverVideo": "/videos/home-cover-1.mp4",
   "contactEmail": "contact@example.com",
-  "contactQrCode": "https://cdn.example.com/qrcode/contact-qr-1.png",
+  "contactQrCode": "/qrcode/contact-qr-1.png",
   "totalPlayCount": 12800000,
   "totalLikeCount": 860000,
   "totalFollowerCount": 240000,
   "authorIdentityTag": "电影解说创作者 / 剪辑师",
   "slogan": "用镜头拆解故事",
   "creationAttitude": "先理解，再表达；先克制，再准确。",
-  "authorPhoto": "https://cdn.example.com/images/author-photo-1.jpg",
-  "editingDeskWorkPhoto": "https://cdn.example.com/images/editing-desk-1.jpg",
-  "assetLibraryScreenshot": "https://cdn.example.com/images/asset-library-1.jpg",
-  "dailyMovieWatchingPhoto": "https://cdn.example.com/images/daily-movie-1.jpg",
+  "authorPhoto": "/images/author-photo-1.jpg",
+  "editingDeskWorkPhoto": "/images/editing-desk-1.jpg",
+  "assetLibraryScreenshot": "/images/asset-library-1.jpg",
+  "dailyMovieWatchingPhoto": "/images/daily-movie-1.jpg",
   "annualTop10Films": ["《奥本海默》", "《爱乐之城》"],
   "influentialThreeDirectors": ["希区柯克", "诺兰", "是枝裕和"],
   "contactInfo": "微信：brandstudio01",
@@ -593,7 +593,7 @@ Idempotency-Key: 57fd3ef6-c757-43f1-b922-80924a668212
 Content-Type: application/json
 
 {
-  "homeCoverVideo": "https://cdn.example.com/videos/home-cover-2.mp4",
+  "homeCoverVideo": "/videos/home-cover-2.mp4",
   "contactEmail": "contact@example.com",
   "contactQrCode": null,
   "totalPlayCount": 12800000,
@@ -637,16 +637,16 @@ Authorization: Bearer <accessToken>
 Content-Type: application/json
 
 {
-  "homeCoverVideo": "https://cdn.example.com/videos/home-cover-1.mp4",
+  "homeCoverVideo": "/videos/home-cover-1.mp4",
   "contactEmail": "new-contact@example.com",
-  "contactQrCode": "https://cdn.example.com/qrcode/contact-qr-1.png",
+  "contactQrCode": "/qrcode/contact-qr-1.png",
   "totalPlayCount": 12900000,
   "totalLikeCount": 870000,
   "totalFollowerCount": 245000,
   "authorIdentityTag": "电影解说创作者 / 剪辑师",
   "slogan": "用镜头拆解故事",
   "creationAttitude": "先理解，再表达；先克制，再准确。",
-  "authorPhoto": "https://cdn.example.com/images/author-photo-1.jpg",
+  "authorPhoto": "/images/author-photo-1.jpg",
   "editingDeskWorkPhoto": null,
   "assetLibraryScreenshot": null,
   "dailyMovieWatchingPhoto": null,
@@ -709,7 +709,7 @@ Content-Type: application/json
 
 {
   "fileKey": "images/2026/07/01J2COVER.webp",
-  "url": "https://cdn.example.com/images/2026/07/01J2COVER.webp",
+  "url": "/uploads/images/2026/07/01J2COVER.webp",
   "originalName": "cover.webp",
   "contentType": "image/webp",
   "fileSize": 248312,
@@ -761,8 +761,8 @@ Authorization: Bearer <accessToken>
       "id": 1,
       "videoTitle": "为什么这部电影能封神",
       "videoIntro": "从叙事结构、镜头语言和人物动机三个角度拆解。",
-      "videoUrl": "https://cdn.example.com/videos/video-1.mp4",
-      "videoCover": "https://cdn.example.com/covers/video-cover-1.jpg",
+      "videoUrl": "/videos/video-1.mp4",
+      "videoCover": "/covers/video-cover-1.jpg",
       "createTime": "2026-07-16T21:00:00+08:00",
       "updateTime": "2026-07-16T21:00:00+08:00",
       "isDeleted": false
@@ -826,8 +826,8 @@ Content-Type: application/json
 {
   "videoTitle": "如何建立镜头节奏",
   "videoIntro": "从景别、时长和声音三个维度讲解。",
-  "videoUrl": "https://cdn.example.com/videos/video-4.mp4",
-  "videoCover": "https://cdn.example.com/covers/video-cover-4.jpg"
+  "videoUrl": "/videos/video-4.mp4",
+  "videoCover": "/covers/video-cover-4.jpg"
 }
 ```
 
@@ -838,8 +838,8 @@ Content-Type: application/json
   "id": 4,
   "videoTitle": "如何建立镜头节奏",
   "videoIntro": "从景别、时长和声音三个维度讲解。",
-  "videoUrl": "https://cdn.example.com/videos/video-4.mp4",
-  "videoCover": "https://cdn.example.com/covers/video-cover-4.jpg",
+  "videoUrl": "/videos/video-4.mp4",
+  "videoCover": "/covers/video-cover-4.jpg",
   "createTime": "2026-07-17T10:00:00+08:00",
   "updateTime": "2026-07-17T10:00:00+08:00",
   "isDeleted": false
@@ -866,8 +866,8 @@ Content-Type: application/json
 {
   "videoTitle": "如何建立镜头节奏（完整版）",
   "videoIntro": "从景别、时长、声音和情绪四个维度讲解。",
-  "videoUrl": "https://cdn.example.com/videos/video-4.mp4",
-  "videoCover": "https://cdn.example.com/covers/video-cover-4-v2.jpg"
+  "videoUrl": "/videos/video-4.mp4",
+  "videoCover": "/covers/video-cover-4-v2.jpg"
 }
 ```
 
@@ -898,8 +898,8 @@ Idempotency-Key: b3039e68-4b16-4234-aea6-3d64d5e1d3c2
   "id": 5,
   "videoTitle": "为什么这部电影能封神（副本）",
   "videoIntro": "从叙事结构、镜头语言和人物动机三个角度拆解。",
-  "videoUrl": "https://cdn.example.com/videos/video-1.mp4",
-  "videoCover": "https://cdn.example.com/covers/video-cover-1.jpg",
+  "videoUrl": "/videos/video-1.mp4",
+  "videoCover": "/covers/video-cover-1.jpg",
   "createTime": "2026-07-17T10:10:00+08:00",
   "updateTime": "2026-07-17T10:10:00+08:00",
   "isDeleted": false
@@ -995,7 +995,7 @@ Authorization: Bearer <accessToken>
     {
       "id": 3,
       "materialTitle": "字幕样式模板",
-      "materialPhoto": "https://cdn.example.com/materials/subtitle-pack.jpg",
+      "materialPhoto": "/materials/subtitle-pack.jpg",
       "materialIntro": "适合打造统一视觉风格的片头字幕与重点标注。",
       "price": 29.0,
       "stock": 200,
@@ -1063,7 +1063,7 @@ Content-Type: application/json
 
 {
   "materialTitle": "电影调色预设包",
-  "materialPhoto": "https://cdn.example.com/materials/lut-pack.jpg",
+  "materialPhoto": "/materials/lut-pack.jpg",
   "materialIntro": "适用于常见电影感调色场景。",
   "price": 49.9,
   "stock": 100,
@@ -1081,7 +1081,7 @@ Content-Type: application/json
 {
   "id": 4,
   "materialTitle": "电影调色预设包",
-  "materialPhoto": "https://cdn.example.com/materials/lut-pack.jpg",
+  "materialPhoto": "/materials/lut-pack.jpg",
   "materialIntro": "适用于常见电影感调色场景。",
   "price": 49.9,
   "stock": 100,
@@ -1115,7 +1115,7 @@ Content-Type: application/json
 
 {
   "materialTitle": "电影调色预设包 V2",
-  "materialPhoto": "https://cdn.example.com/materials/lut-pack-v2.jpg",
+  "materialPhoto": "/materials/lut-pack-v2.jpg",
   "materialIntro": "新增夜景和室内场景预设。",
   "price": 59.0,
   "stock": 120,
@@ -1230,7 +1230,7 @@ Authorization: Bearer <accessToken>
     {
       "id": 2,
       "platformName": "B站",
-      "platformLogo": "https://cdn.example.com/logos/bilibili.png",
+      "platformLogo": "/logos/bilibili.png",
       "accountUrl": "https://space.bilibili.com/example",
       "intro": "偏长内容与系列化专题，适合深度解析。",
       "createTime": "2026-07-16T21:00:00+08:00",
@@ -1290,7 +1290,7 @@ Content-Type: application/json
 
 {
   "platformName": "YouTube",
-  "platformLogo": "https://cdn.example.com/logos/youtube.png",
+  "platformLogo": "/logos/youtube.png",
   "accountUrl": "https://www.youtube.com/@example",
   "intro": "发布带英文字幕的电影解析内容。"
 }
@@ -1302,7 +1302,7 @@ Content-Type: application/json
 {
   "id": 4,
   "platformName": "YouTube",
-  "platformLogo": "https://cdn.example.com/logos/youtube.png",
+  "platformLogo": "/logos/youtube.png",
   "accountUrl": "https://www.youtube.com/@example",
   "intro": "发布带英文字幕的电影解析内容。",
   "createTime": "2026-07-17T11:00:00+08:00",
@@ -1330,7 +1330,7 @@ Content-Type: application/json
 
 {
   "platformName": "YouTube",
-  "platformLogo": "https://cdn.example.com/logos/youtube-v2.png",
+  "platformLogo": "/logos/youtube-v2.png",
   "accountUrl": "https://www.youtube.com/@pbwstudio",
   "intro": "发布中英双语电影解析内容。"
 }
@@ -1666,7 +1666,7 @@ Authorization: Bearer <accessToken>
       "nickname": "movie_fan",
       "account": "movie_fan",
       "email": "moviefan@example.com",
-      "avatar": "https://cdn.example.com/avatars/user-1.jpg",
+      "avatar": "/avatars/user-1.jpg",
       "role": "用户",
       "passwordConfigured": true,
       "createTime": "2026-07-16T21:00:00+08:00",
@@ -1731,7 +1731,7 @@ Content-Type: application/json
   "account": "film_student",
   "password": "PbW2026pass",
   "email": "student@example.com",
-  "avatar": "https://cdn.example.com/avatars/student.jpg",
+  "avatar": "/avatars/student.jpg",
   "role": "用户"
 }
 ```
@@ -1744,7 +1744,7 @@ Content-Type: application/json
   "nickname": "film_student",
   "account": "film_student",
   "email": "student@example.com",
-  "avatar": "https://cdn.example.com/avatars/student.jpg",
+  "avatar": "/avatars/student.jpg",
   "role": "用户",
   "passwordConfigured": true,
   "createTime": "2026-07-17T11:40:00+08:00",
@@ -1787,7 +1787,7 @@ Content-Type: application/json
   "account": "film_student",
   "password": null,
   "email": "student-new@example.com",
-  "avatar": "https://cdn.example.com/avatars/student.jpg",
+  "avatar": "/avatars/student.jpg",
   "role": "用户"
 }
 ```
@@ -1819,7 +1819,7 @@ Idempotency-Key: 3111eff1-e7de-44b0-9cf1-0ed5fb502a55
   "nickname": "movie_fan（副本）",
   "account": "movie_fan_copy_5",
   "email": null,
-  "avatar": "https://cdn.example.com/avatars/user-1.jpg",
+  "avatar": "/avatars/user-1.jpg",
   "role": "用户",
   "passwordConfigured": false,
   "createTime": "2026-07-17T11:50:00+08:00",
@@ -2403,19 +2403,19 @@ Accept: application/json
 ```json
 {
   "id": 1,
-  "homeCoverVideo": "https://cdn.example.com/videos/home-cover-1.mp4",
+  "homeCoverVideo": "/videos/home-cover-1.mp4",
   "contactEmail": "contact@example.com",
-  "contactQrCode": "https://cdn.example.com/qrcode/contact-qr-1.png",
+  "contactQrCode": "/qrcode/contact-qr-1.png",
   "totalPlayCount": 12800000,
   "totalLikeCount": 860000,
   "totalFollowerCount": 240000,
   "authorIdentityTag": "电影解说创作者 / 剪辑师",
   "slogan": "用镜头拆解故事",
   "creationAttitude": "先理解，再表达；先克制，再准确。",
-  "authorPhoto": "https://cdn.example.com/images/author-photo-1.jpg",
-  "editingDeskWorkPhoto": "https://cdn.example.com/images/editing-desk-1.jpg",
-  "assetLibraryScreenshot": "https://cdn.example.com/images/asset-library-1.jpg",
-  "dailyMovieWatchingPhoto": "https://cdn.example.com/images/daily-movie-1.jpg",
+  "authorPhoto": "/images/author-photo-1.jpg",
+  "editingDeskWorkPhoto": "/images/editing-desk-1.jpg",
+  "assetLibraryScreenshot": "/images/asset-library-1.jpg",
+  "dailyMovieWatchingPhoto": "/images/daily-movie-1.jpg",
   "annualTop10Films": ["《奥本海默》", "《爱乐之城》", "《燃烧女子的肖像》"],
   "influentialThreeDirectors": ["希区柯克", "诺兰", "是枝裕和"],
   "contactInfo": "微信：brandstudio01"
@@ -2470,8 +2470,8 @@ Accept: application/json
     "id": 1,
     "videoTitle": "为什么这部电影能封神",
     "videoIntro": "从叙事结构、镜头语言和人物动机三个角度拆解。",
-    "videoUrl": "https://cdn.example.com/videos/video-1.mp4",
-    "videoCover": "https://cdn.example.com/covers/video-cover-1.jpg",
+    "videoUrl": "/videos/video-1.mp4",
+    "videoCover": "/covers/video-cover-1.jpg",
     "platformName": "抖音",
     "playCountText": "180万"
   }
@@ -2528,7 +2528,7 @@ Accept: application/json
   {
     "id": 1,
     "materialTitle": "电影海报素材包",
-    "materialPhoto": "https://cdn.example.com/materials/poster-pack.jpg",
+    "materialPhoto": "/materials/poster-pack.jpg",
     "materialIntro": "适合电影解说封面、分镜展示和宣传页使用。",
     "price": 39.9,
     "itemCount": 150,
@@ -2595,7 +2595,7 @@ Accept: application/json
   {
     "id": 1,
     "platformName": "抖音",
-    "platformLogo": "https://cdn.example.com/logos/douyin.png",
+    "platformLogo": "/logos/douyin.png",
     "accountUrl": "https://www.douyin.com/user/example",
     "intro": "主阵地账号，更新电影解说和剪辑技巧内容。",
     "followerCountText": "15万",

@@ -27,6 +27,6 @@ describe('ServicesView', () => {
 
     expect(wrapper.text()).toContain('联系顾问参加课程')
     expect(wrapper.get('img[alt="联系二维码"]').attributes('src'))
-      .toBe('http://localhost/contact-qr.jpg')
+      .toBe('/contact-qr.jpg')
   })
 })

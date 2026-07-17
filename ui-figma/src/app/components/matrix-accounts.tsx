@@ -8,7 +8,7 @@ const accounts = [
     name: "影像创作者",
     followers: "15万",
     url: "https://douyin.com",
-    logo: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=100&h=100&fit=crop",
+    logo: "/logos/douyin.png",
     color: "bg-black",
   },
   {
@@ -17,7 +17,7 @@ const accounts = [
     name: "影像创作者",
     followers: "8万",
     url: "https://bilibili.com",
-    logo: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=100&h=100&fit=crop",
+    logo: "/logos/bilibili.png",
     color: "bg-pink-500",
   },
   {
@@ -26,7 +26,7 @@ const accounts = [
     name: "影像创作者",
     followers: "5万",
     url: "https://xiaohongshu.com",
-    logo: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=100&h=100&fit=crop",
+    logo: "/logos/xiaohongshu.png",
     color: "bg-red-500",
   },
   {
@@ -35,7 +35,7 @@ const accounts = [
     name: "影像创作者",
     followers: "3万",
     url: "https://weixin.qq.com",
-    logo: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=100&h=100&fit=crop",
+    logo: "/logos/wechat-video.png",
     color: "bg-green-500",
   },
 ];

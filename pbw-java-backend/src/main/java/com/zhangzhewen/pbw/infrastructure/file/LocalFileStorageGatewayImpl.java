@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -34,11 +35,11 @@ public class LocalFileStorageGatewayImpl implements FileStorageGateway {
     );
 
     private final Path root;
-    private final String publicBaseUrl;
+    private final String publicBasePath;
 
     public LocalFileStorageGatewayImpl(@Value("${pbw.storage.root}") String root, @Value("${pbw.storage.public-base-url}") String publicBaseUrl) {
         this.root = Path.of(root).toAbsolutePath().normalize();
-        this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
+        this.publicBasePath = toRootRelativePath(publicBaseUrl);
     }
 
     @Override
@@ -74,10 +75,22 @@ public class LocalFileStorageGatewayImpl implements FileStorageGateway {
             } finally {
                 Files.deleteIfExists(temporary);
             }
-            return new StoredFile(key, publicBaseUrl + "/" + key, originalName, detectedContentType, size, mediaType);
+            return new StoredFile(key, publicBasePath + "/" + key, originalName, detectedContentType, size, mediaType);
         } catch (IOException exception) {
             throw new IllegalStateException("文件保存失败", exception);
         }
+    }
+
+    private static String toRootRelativePath(String value) {
+        String normalized = value == null ? "" : value.trim();
+        if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+            normalized = URI.create(normalized).getPath();
+        }
+        if (!normalized.startsWith("/")) {
+            normalized = "/" + normalized;
+        }
+        normalized = normalized.replaceAll("/+$", "");
+        return normalized.isEmpty() ? "/uploads" : normalized;
     }
 
     private static void validateBasic(String name, long size, String mediaType) {
