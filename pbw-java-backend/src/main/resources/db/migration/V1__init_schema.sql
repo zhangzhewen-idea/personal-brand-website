@@ -88,7 +88,6 @@ CREATE TABLE `users` (
   `nickname` VARCHAR(255) NOT NULL,
   `account` VARCHAR(255) NOT NULL,
   `password` VARCHAR(255) DEFAULT NULL COMMENT '当前阶段按需求明文存储',
-  `password_configured` TINYINT(1) NOT NULL DEFAULT 1,
   `email` VARCHAR(255) DEFAULT NULL,
   `avatar` VARCHAR(500) DEFAULT NULL,
   `role` ENUM('用户', '管理员') NOT NULL DEFAULT '用户',
@@ -137,7 +136,7 @@ INSERT INTO `course` (`course_name`, `course_tag`, `course_intro`, `course_price
 ('短视频剪辑实战课', '转场 / 节奏 / 音效', '围绕短视频制作效率和画面张力，给出实操方法。', 299.00, 1),
 ('账号内容增长课', '选题 / 复盘 / 增长', '帮助创作者建立稳定更新和数据复盘机制。', 399.00, 0);
 
-INSERT INTO `users` (`nickname`, `account`, `password`, `password_configured`, `email`, `avatar`, `role`) VALUES
-('管理员', 'admin', '123456', 1, 'admin@example.com', 'https://cdn.example.com/avatars/admin.jpg', '管理员'),
-('movie_fan', 'movie_fan', '123456', 1, 'moviefan@example.com', 'https://cdn.example.com/avatars/user-1.jpg', '用户'),
-('editor_life', 'editor_life', '123456', 1, 'editorlife@example.com', 'https://cdn.example.com/avatars/user-2.jpg', '用户');
+INSERT INTO `users` (`nickname`, `account`, `password`, `email`, `avatar`, `role`) VALUES
+('管理员', 'admin', '123456', 'admin@example.com', 'https://cdn.example.com/avatars/admin.jpg', '管理员'),
+('movie_fan', 'movie_fan', '123456', 'moviefan@example.com', 'https://cdn.example.com/avatars/user-1.jpg', '用户'),
+('editor_life', 'editor_life', '123456', 'editorlife@example.com', 'https://cdn.example.com/avatars/user-2.jpg', '用户');

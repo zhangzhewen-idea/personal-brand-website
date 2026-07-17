@@ -6,6 +6,7 @@ import { Delete, Plus } from '@element-plus/icons-vue'
 import MediaUpload from '@/components/MediaUpload.vue'
 import type {
   EntityPageConfig,
+  EntityFormSubmission,
   ManagementRecord,
   ProductSpecification,
   UserRole,
@@ -49,7 +50,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: boolean): void
-  (event: 'submit', value: ManagementRecord): void
+  (event: 'submit', value: EntityFormSubmission): void
 }>()
 
 const formRef = ref<FormInstance>()
@@ -123,7 +124,7 @@ const rules = computed<FormRules>(() => {
       return {
         nickname: required('请输入昵称'),
         account: required('请输入账号'),
-        password: required('请输入密码'),
+        ...(props.mode === 'create' ? { password: required('请输入密码') } : {}),
       }
   }
 })
@@ -155,7 +156,7 @@ const removeSpecification = (index: number) => {
 
 const asNullable = (value: string | null) => value || null
 
-const buildRecord = (): ManagementRecord => {
+const buildRecord = (): EntityFormSubmission => {
   const now = new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
   const base = {
     id: props.record?.id || 0,
@@ -212,6 +213,10 @@ const buildRecord = (): ManagementRecord => {
         email: asNullable(form.email.trim()),
         avatar: form.avatar,
         role: form.role,
+        passwordConfigured:
+          props.record && 'passwordConfigured' in props.record
+            ? props.record.passwordConfigured
+            : Boolean(form.password),
       }
   }
 }

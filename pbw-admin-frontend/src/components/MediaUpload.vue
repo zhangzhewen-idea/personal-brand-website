@@ -3,6 +3,8 @@ import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { UploadFile } from 'element-plus'
 import { Delete, Picture, UploadFilled, VideoCamera } from '@element-plus/icons-vue'
+import { getApiErrorMessage } from '@/api/client'
+import { fileApi } from '@/api/modules/files'
 
 const props = withDefaults(
   defineProps<{
@@ -24,9 +26,12 @@ const emit = defineEmits<{
 const previewFailed = ref(false)
 const selectedFileName = ref('')
 const objectUrl = ref<string | null>(null)
+const uploading = ref(false)
+const uploadProgress = ref(0)
 
 const accept = computed(() => (props.mediaType === 'video' ? 'video/*' : 'image/*'))
 const mediaLabel = computed(() => (props.mediaType === 'video' ? '视频' : '图片'))
+const previewSource = computed(() => objectUrl.value || props.modelValue)
 const fileName = computed(() => {
   if (selectedFileName.value) return selectedFileName.value
   if (!props.modelValue) return ''
@@ -38,7 +43,7 @@ const clearObjectUrl = () => {
   objectUrl.value = null
 }
 
-const handleChange = (file: UploadFile) => {
+const handleChange = async (file: UploadFile) => {
   if (!file.raw) return
 
   const expectedType = `${props.mediaType}/`
@@ -57,7 +62,22 @@ const handleChange = (file: UploadFile) => {
   objectUrl.value = URL.createObjectURL(file.raw)
   selectedFileName.value = file.name
   previewFailed.value = false
-  emit('update:modelValue', objectUrl.value)
+  uploading.value = true
+  uploadProgress.value = 0
+  try {
+    const { data } = await fileApi.upload(file.raw, props.mediaType, (percentage) => {
+      uploadProgress.value = percentage
+    })
+    emit('update:modelValue', data.url)
+    clearObjectUrl()
+    ElMessage.success(`${mediaLabel.value}上传成功`)
+  } catch (error) {
+    clearObjectUrl()
+    selectedFileName.value = ''
+    ElMessage.error(getApiErrorMessage(error, `${mediaLabel.value}上传失败`))
+  } finally {
+    uploading.value = false
+  }
 }
 
 const clearFile = () => {
@@ -79,10 +99,10 @@ watch(
 
 <template>
   <div class="media-upload">
-    <div v-if="modelValue" class="media-upload__preview">
+    <div v-if="previewSource" class="media-upload__preview">
       <video
         v-if="mediaType === 'video' && !previewFailed"
-        :src="modelValue"
+        :src="previewSource"
         controls
         muted
         preload="metadata"
@@ -90,7 +110,7 @@ watch(
       />
       <img
         v-else-if="mediaType === 'image' && !previewFailed"
-        :src="modelValue"
+        :src="previewSource"
         :alt="fileName"
         @error="previewFailed = true"
       />
@@ -118,8 +138,8 @@ watch(
       :show-file-list="false"
       :on-change="handleChange"
     >
-      <el-button plain :icon="UploadFilled">
-        {{ modelValue ? `重新选择${mediaLabel}` : `选择${mediaLabel}` }}
+      <el-button plain :icon="UploadFilled" :loading="uploading" :disabled="uploading">
+        {{ uploading ? `上传中 ${uploadProgress}%` : modelValue ? `重新选择${mediaLabel}` : `选择${mediaLabel}` }}
       </el-button>
     </el-upload>
     <p v-if="!readonly">{{ hint || (mediaType === 'video' ? '支持常见视频格式，最大 100MB' : '支持 JPG、PNG、WEBP，最大 10MB') }}</p>

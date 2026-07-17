@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   EditPen,
@@ -15,63 +15,89 @@ import {
 } from '@element-plus/icons-vue'
 import BasicInfoDialog from '@/components/BasicInfoDialog.vue'
 import PageHeading from '@/components/PageHeading.vue'
-import { basicInfo as initialBasicInfo } from '@/data/mockData'
+import { getApiErrorMessage } from '@/api/client'
+import { basicInfoApi, type BasicInfoPayload } from '@/api/modules/basicInfo'
 import type { BasicInfo } from '@/types/database'
 import { cloneData } from '@/utils/cloneData'
 
 const formatNumber = (value: number) => new Intl.NumberFormat('zh-CN').format(value)
-const basicInfo = ref<BasicInfo>(cloneData(initialBasicInfo))
+const basicInfo = ref<BasicInfo | null>(null)
+const loading = ref(false)
 const dialogVisible = ref(false)
 const dialogMode = ref<'create' | 'edit'>('edit')
 const dialogRecord = ref<BasicInfo | null>(null)
 
 const mediaFields = computed(() => [
-  { label: '首页封面视频', field: 'homeCoverVideo', value: basicInfo.value.homeCoverVideo, icon: VideoPlay, kind: 'VIDEO' },
-  { label: '联系二维码', field: 'contactQrCode', value: basicInfo.value.contactQrCode, icon: Picture, kind: 'IMAGE' },
-  { label: '作者照片', field: 'authorPhoto', value: basicInfo.value.authorPhoto, icon: User, kind: 'IMAGE' },
-  { label: '剪辑台工作照', field: 'editingDeskWorkPhoto', value: basicInfo.value.editingDeskWorkPhoto, icon: Film, kind: 'IMAGE' },
-  { label: '素材库截图', field: 'assetLibraryScreenshot', value: basicInfo.value.assetLibraryScreenshot, icon: Picture, kind: 'IMAGE' },
-  { label: '观影日常照片', field: 'dailyMovieWatchingPhoto', value: basicInfo.value.dailyMovieWatchingPhoto, icon: Film, kind: 'IMAGE' },
+  { label: '首页封面视频', field: 'homeCoverVideo', value: basicInfo.value?.homeCoverVideo, icon: VideoPlay, kind: 'VIDEO' },
+  { label: '联系二维码', field: 'contactQrCode', value: basicInfo.value?.contactQrCode, icon: Picture, kind: 'IMAGE' },
+  { label: '作者照片', field: 'authorPhoto', value: basicInfo.value?.authorPhoto, icon: User, kind: 'IMAGE' },
+  { label: '剪辑台工作照', field: 'editingDeskWorkPhoto', value: basicInfo.value?.editingDeskWorkPhoto, icon: Film, kind: 'IMAGE' },
+  { label: '素材库截图', field: 'assetLibraryScreenshot', value: basicInfo.value?.assetLibraryScreenshot, icon: Picture, kind: 'IMAGE' },
+  { label: '观影日常照片', field: 'dailyMovieWatchingPhoto', value: basicInfo.value?.dailyMovieWatchingPhoto, icon: Film, kind: 'IMAGE' },
 ])
 
 const openDialog = (mode: 'create' | 'edit') => {
   dialogMode.value = mode
-  dialogRecord.value = mode === 'edit' ? cloneData(basicInfo.value) : null
+  dialogRecord.value = mode === 'edit' && basicInfo.value ? cloneData(basicInfo.value) : null
   dialogVisible.value = true
 }
 
-const saveBasicInfo = (record: BasicInfo) => {
-  basicInfo.value = {
-    ...record,
-    id: dialogMode.value === 'create' ? basicInfo.value.id + 1 : record.id,
-  }
-  ElMessage.success(dialogMode.value === 'create' ? '基本信息新增成功' : '基本信息已更新')
+const toPayload = (record: BasicInfo): BasicInfoPayload => {
+  const { id: _id, createTime: _createTime, updateTime: _updateTime, isDeleted: _isDeleted, ...payload } = record
+  return payload
 }
+
+const saveBasicInfo = async (record: BasicInfo) => {
+  try {
+    const { data } = dialogMode.value === 'create'
+      ? await basicInfoApi.create(toPayload(record))
+      : await basicInfoApi.update(record.id, toPayload(record))
+    basicInfo.value = data
+    dialogVisible.value = false
+    ElMessage.success(dialogMode.value === 'create' ? '基本信息新增成功' : '基本信息已更新')
+  } catch (error) {
+    ElMessage.error(getApiErrorMessage(error, dialogMode.value === 'create' ? '新增基本信息失败' : '更新基本信息失败'))
+  }
+}
+
+const loadBasicInfo = async () => {
+  loading.value = true
+  try {
+    const { data } = await basicInfoApi.get()
+    basicInfo.value = data
+  } catch (error) {
+    ElMessage.error(getApiErrorMessage(error, '加载基本信息失败'))
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => void loadBasicInfo())
 </script>
 
 <template>
-  <section>
+  <section v-loading="loading">
     <PageHeading
       eyebrow="PROFILE / BASIC INFO"
       title="基本信息管理"
       description="维护个人品牌介绍、核心数据、媒体素材与联系方式。"
     >
       <el-button :icon="Plus" @click="openDialog('create')">新增基本信息</el-button>
-      <el-button type="primary" :icon="EditPen" @click="openDialog('edit')">编辑基本信息</el-button>
+      <el-button type="primary" :icon="EditPen" :disabled="!basicInfo" @click="openDialog('edit')">编辑基本信息</el-button>
     </PageHeading>
 
     <div class="metric-grid">
       <article class="panel metric-card">
         <span class="metric-icon is-blue"><View /></span>
-        <div><span>全网播放量</span><strong>{{ formatNumber(basicInfo.totalPlayCount) }}</strong><small>totalPlayCount</small></div>
+        <div><span>全网播放量</span><strong>{{ formatNumber(basicInfo?.totalPlayCount || 0) }}</strong><small>totalPlayCount</small></div>
       </article>
       <article class="panel metric-card">
         <span class="metric-icon is-violet"><Pointer /></span>
-        <div><span>全网点赞数</span><strong>{{ formatNumber(basicInfo.totalLikeCount) }}</strong><small>totalLikeCount</small></div>
+        <div><span>全网点赞数</span><strong>{{ formatNumber(basicInfo?.totalLikeCount || 0) }}</strong><small>totalLikeCount</small></div>
       </article>
       <article class="panel metric-card">
         <span class="metric-icon is-green"><User /></span>
-        <div><span>全网粉丝数</span><strong>{{ formatNumber(basicInfo.totalFollowerCount) }}</strong><small>totalFollowerCount</small></div>
+        <div><span>全网粉丝数</span><strong>{{ formatNumber(basicInfo?.totalFollowerCount || 0) }}</strong><small>totalFollowerCount</small></div>
       </article>
     </div>
 
@@ -82,16 +108,16 @@ const saveBasicInfo = (record: BasicInfo) => {
           <span>5 FIELDS</span>
         </div>
         <dl class="detail-list">
-          <div><dt>作者身份标签<small>authorIdentityTag</small></dt><dd>{{ basicInfo.authorIdentityTag }}</dd></div>
-          <div><dt>Slogan<small>slogan</small></dt><dd>{{ basicInfo.slogan }}</dd></div>
-          <div><dt>创作态度<small>creationAttitude</small></dt><dd>{{ basicInfo.creationAttitude }}</dd></div>
+          <div><dt>作者身份标签<small>authorIdentityTag</small></dt><dd>{{ basicInfo?.authorIdentityTag || '—' }}</dd></div>
+          <div><dt>Slogan<small>slogan</small></dt><dd>{{ basicInfo?.slogan || '—' }}</dd></div>
+          <div><dt>创作态度<small>creationAttitude</small></dt><dd>{{ basicInfo?.creationAttitude || '—' }}</dd></div>
           <div>
             <dt>联系邮箱<small>contactEmail</small></dt>
-            <dd class="accent-value"><el-icon><Message /></el-icon>{{ basicInfo.contactEmail }}</dd>
+            <dd class="accent-value"><el-icon><Message /></el-icon>{{ basicInfo?.contactEmail || '—' }}</dd>
           </div>
           <div>
             <dt>联系方式<small>contactInfo</small></dt>
-            <dd class="accent-value"><el-icon><Link /></el-icon>{{ basicInfo.contactInfo }}</dd>
+            <dd class="accent-value"><el-icon><Link /></el-icon>{{ basicInfo?.contactInfo || '—' }}</dd>
           </div>
         </dl>
       </article>
@@ -104,13 +130,13 @@ const saveBasicInfo = (record: BasicInfo) => {
         <div class="tag-section">
           <div class="tag-section__head"><strong>年度十佳影片</strong><small>annualTop10Films</small></div>
           <div class="tag-cloud film-tags">
-            <el-tag v-for="film in basicInfo.annualTop10Films" :key="film" effect="plain" round>{{ film }}</el-tag>
+            <el-tag v-for="film in basicInfo?.annualTop10Films || []" :key="film" effect="plain" round>{{ film }}</el-tag>
           </div>
         </div>
         <div class="tag-section">
           <div class="tag-section__head"><strong>影响我的三位导演</strong><small>influentialThreeDirectors</small></div>
           <div class="tag-cloud">
-            <el-tag v-for="director in basicInfo.influentialThreeDirectors" :key="director" type="info" effect="light" round>
+            <el-tag v-for="director in basicInfo?.influentialThreeDirectors || []" :key="director" type="info" effect="light" round>
               {{ director }}
             </el-tag>
           </div>

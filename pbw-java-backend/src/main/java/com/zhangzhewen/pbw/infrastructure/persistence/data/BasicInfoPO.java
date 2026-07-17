@@ -26,6 +26,7 @@ public class BasicInfoPO extends BasePO {
     private String assetLibraryScreenshot;
     @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String dailyMovieWatchingPhoto;
+    @TableField(value = "annual_top_10_films")
     private String annualTop10Films;
     private String influentialThreeDirectors;
     @TableField(updateStrategy = FieldStrategy.ALWAYS)

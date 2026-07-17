@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import {
   ArrowRight,
   Coin,
@@ -12,9 +14,13 @@ import {
   VideoCamera,
   View,
 } from '@element-plus/icons-vue'
-import { basicInfo, courses, materials, matrixAccounts, users, videos } from '@/data/mockData'
+import { getApiErrorMessage } from '@/api/client'
+import { dashboardApi } from '@/api/modules/dashboard'
+import type { DashboardData, DashboardMetric } from '@/types/database'
 
 const router = useRouter()
+const dashboard = ref<DashboardData | null>(null)
+const loading = ref(false)
 
 const formatCompactNumber = (value: number) => {
   if (value >= 10000000) return `${(value / 10000000).toFixed(2)}kw`
@@ -22,64 +28,73 @@ const formatCompactNumber = (value: number) => {
   return String(value)
 }
 
-const stats = [
-  {
-    label: '全网播放量',
-    value: formatCompactNumber(basicInfo.totalPlayCount),
-    caption: '内容持续被看见',
-    trend: '+18.6%',
-    icon: View,
-    tone: 'blue',
-  },
-  {
-    label: '全网点赞数',
-    value: formatCompactNumber(basicInfo.totalLikeCount),
-    caption: '互动表现稳定',
-    trend: '+9.2%',
-    icon: Pointer,
-    tone: 'violet',
-  },
-  {
-    label: '全网粉丝数',
-    value: formatCompactNumber(basicInfo.totalFollowerCount),
-    caption: '账号矩阵共计',
-    trend: '+6.8%',
-    icon: User,
-    tone: 'green',
-  },
-  {
-    label: '已上线课程',
-    value: String(courses.filter((item) => item.isOnline).length),
-    caption: `共 ${courses.length} 门课程`,
-    trend: '66.7%',
-    icon: Coin,
-    tone: 'orange',
-  },
-]
+const metricMeta: Record<DashboardMetric['key'], { label: string; icon: typeof View; tone: string }> = {
+  totalPlayCount: { label: '全网播放量', icon: View, tone: 'blue' },
+  totalLikeCount: { label: '全网点赞数', icon: Pointer, tone: 'violet' },
+  totalFollowerCount: { label: '全网粉丝数', icon: User, tone: 'green' },
+  onlineCourseCount: { label: '已上线课程', icon: Coin, tone: 'orange' },
+}
 
-const contentSummary = [
-  { label: '视频作品', value: videos.length, unit: '条', icon: VideoCamera, path: '/videos' },
-  { label: '素材产品', value: materials.length, unit: '份', icon: Files, path: '/materials' },
-  { label: '矩阵账号', value: matrixAccounts.length, unit: '个', icon: TrendCharts, path: '/matrix-accounts' },
-  { label: '系统用户', value: users.length, unit: '人', icon: User, path: '/users' },
-]
+const stats = computed(() => (dashboard.value?.metrics || []).map((metric) => ({
+  ...metricMeta[metric.key],
+  value: formatCompactNumber(metric.value),
+  caption: metric.caption,
+  trend: metric.trendRate == null
+    ? '暂无趋势'
+    : `${metric.trendDirection === 'down' ? '-' : metric.trendDirection === 'up' ? '+' : ''}${metric.trendRate}%`,
+})))
 
-const latestVideos = videos.slice(0, 3)
+const contentSummary = computed(() => {
+  const summary = dashboard.value?.contentSummary
+  return [
+    { label: '视频作品', value: summary?.videoCount || 0, unit: '条', icon: VideoCamera, path: '/videos' },
+    { label: '素材产品', value: summary?.materialCount || 0, unit: '份', icon: Files, path: '/materials' },
+    { label: '矩阵账号', value: summary?.matrixAccountCount || 0, unit: '个', icon: TrendCharts, path: '/matrix-accounts' },
+    { label: '系统用户', value: summary?.userCount || 0, unit: '人', icon: User, path: '/users' },
+  ]
+})
+
+const latestVideos = computed(() => dashboard.value?.latestVideos || [])
+const profileSummary = computed(() => dashboard.value?.profileSummary)
+const completeness = computed(() => dashboard.value?.profileCompleteness)
+const serverDate = computed(() => {
+  const date = dashboard.value?.serverTime ? new Date(dashboard.value.serverTime) : new Date()
+  return {
+    month: date.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
+    day: String(date.getDate()).padStart(2, '0'),
+    weekday: date.toLocaleString('zh-CN', { weekday: 'long' }),
+    year: date.getFullYear(),
+  }
+})
+
+const loadDashboard = async () => {
+  loading.value = true
+  try {
+    const { data } = await dashboardApi.get()
+    dashboard.value = data
+  } catch (error) {
+    ElMessage.error(getApiErrorMessage(error, '加载工作台失败'))
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => void loadDashboard())
 </script>
 
 <template>
-  <section>
+  <section v-loading="loading">
     <div class="dashboard-heading">
       <div>
-        <span class="dashboard-kicker">OVERVIEW / 2026</span>
-        <h1>早上好，管理员</h1>
+        <span class="dashboard-kicker">OVERVIEW / {{ serverDate.year }}</span>
+        <h1>早上好，{{ dashboard?.adminNickname || '管理员' }}</h1>
         <p>这里是 PBW 内容资产的当前概览，今天也保持创作有序。</p>
       </div>
       <div class="dashboard-date">
-        <span>JUL</span>
-        <strong>17</strong>
+        <span>{{ serverDate.month }}</span>
+        <strong>{{ serverDate.day }}</strong>
         <i></i>
-        <small>星期五<br />2026</small>
+        <small>{{ serverDate.weekday }}<br />{{ serverDate.year }}</small>
       </div>
     </div>
 
@@ -120,13 +135,13 @@ const latestVideos = videos.slice(0, 3)
         <div class="profile-card__accent"></div>
         <div class="profile-card__head">
           <span class="profile-avatar"><Film /></span>
-          <el-tag type="primary" effect="light" round>品牌资料已配置</el-tag>
+          <el-tag type="primary" effect="light" round>{{ profileSummary ? '品牌资料已配置' : '品牌资料待配置' }}</el-tag>
         </div>
         <span class="profile-card__label">CREATOR PROFILE</span>
-        <h2>{{ basicInfo.slogan }}</h2>
-        <p>{{ basicInfo.creationAttitude }}</p>
+        <h2>{{ profileSummary?.slogan || '暂未配置品牌 Slogan' }}</h2>
+        <p>{{ profileSummary?.creationAttitude || '请前往基本信息页面完善品牌资料。' }}</p>
         <div class="profile-card__meta">
-          <span>{{ basicInfo.authorIdentityTag }}</span>
+          <span>{{ profileSummary?.authorIdentityTag || '未配置身份标签' }}</span>
           <button type="button" @click="router.push('/basic-info')">查看资料 <ArrowRight /></button>
         </div>
       </article>
@@ -151,15 +166,15 @@ const latestVideos = videos.slice(0, 3)
       <article class="panel health-card">
         <div class="panel-heading">
           <div><h2>资料完整度</h2><p>基本信息字段配置情况</p></div>
-          <span class="health-score">92%</span>
+          <span class="health-score">{{ completeness?.score || 0 }}%</span>
         </div>
         <div class="health-ring">
-          <div><strong>92</strong><span>/ 100</span></div>
+          <div><strong>{{ completeness?.score || 0 }}</strong><span>/ 100</span></div>
         </div>
         <div class="health-items">
-          <div><span>品牌基础信息</span><strong>完整</strong></div>
-          <div><span>媒体资源配置</span><strong>完整</strong></div>
-          <div><span>年度片单</span><strong>5 / 10</strong></div>
+          <div><span>品牌基础信息</span><strong>{{ completeness?.brandBasicInfoComplete ? '完整' : '待完善' }}</strong></div>
+          <div><span>媒体资源配置</span><strong>{{ completeness?.mediaResourcesComplete ? '完整' : '待完善' }}</strong></div>
+          <div><span>年度片单</span><strong>{{ completeness?.annualTop10FilmCount || 0 }} / {{ completeness?.annualTop10FilmTarget || 10 }}</strong></div>
         </div>
       </article>
     </div>

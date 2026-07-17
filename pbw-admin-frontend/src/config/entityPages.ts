@@ -97,7 +97,7 @@ export const userPageConfig: EntityPageConfig = {
     { field: 'avatar', label: '头像', width: 92, format: 'image' },
     { field: 'nickname', label: '昵称', minWidth: 150 },
     { field: 'account', label: '账号', minWidth: 150 },
-    { field: 'password', label: '密码', width: 120, format: 'password' },
+    { field: 'passwordConfigured', label: '密码状态', width: 120, format: 'password' },
     { field: 'email', label: '邮箱', minWidth: 210 },
     { field: 'role', label: '角色', width: 104, format: 'role' },
     { field: 'createTime', label: '创建时间', width: 174, format: 'datetime' },

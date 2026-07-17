@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Delete,
@@ -14,7 +14,15 @@ import {
 } from '@element-plus/icons-vue'
 import EntityFormDialog from '@/components/EntityFormDialog.vue'
 import PageHeading from '@/components/PageHeading.vue'
-import type { EntityPageConfig, ManagementRecord, ProductSpecification } from '@/types/database'
+import { getApiErrorMessage } from '@/api/client'
+import { entityApis } from '@/api/modules/entities'
+import type { PageQuery, PageResult } from '@/api/modules/crud'
+import type {
+  EntityFormSubmission,
+  EntityPageConfig,
+  ManagementRecord,
+  ProductSpecification,
+} from '@/types/database'
 import { cloneData } from '@/utils/cloneData'
 
 const props = defineProps<{
@@ -22,42 +30,59 @@ const props = defineProps<{
 }>()
 
 const keyword = ref('')
-const status = ref('all')
+const status = ref<'all' | 'normal' | 'deleted'>('all')
+const currentPage = ref(1)
 const pageSize = ref(10)
-const rows = ref<ManagementRecord[]>(props.config.rows.map((row) => cloneData(row)))
+const total = ref(0)
+const rows = ref<ManagementRecord[]>([])
+const loading = ref(false)
 const dialogVisible = ref(false)
 const dialogMode = ref<'create' | 'edit' | 'view'>('create')
 const editingRecord = ref<ManagementRecord | null>(null)
 
+interface EntityApi {
+  getPage(params: PageQuery): Promise<{ data: PageResult<ManagementRecord> }>
+  getDetail(id: number): Promise<{ data: ManagementRecord }>
+  create(data: Record<string, unknown>): Promise<unknown>
+  update(id: number, data: Record<string, unknown>): Promise<unknown>
+  remove(id: number): Promise<unknown>
+  duplicate(id: number): Promise<unknown>
+  restore(id: number): Promise<unknown>
+}
+
+const api = entityApis[props.config.key] as unknown as EntityApi
+
+const loadRows = async () => {
+  loading.value = true
+  try {
+    const { data } = await api.getPage({
+      page: currentPage.value,
+      pageSize: pageSize.value,
+      keyword: keyword.value.trim() || undefined,
+      status: status.value,
+      sortBy: 'createTime',
+      sortOrder: 'desc',
+    })
+    rows.value = data.list as ManagementRecord[]
+    total.value = data.total
+  } catch (error) {
+    ElMessage.error(getApiErrorMessage(error, '加载数据失败'))
+  } finally {
+    loading.value = false
+  }
+}
+
 const getValue = (row: ManagementRecord, field: string) =>
   (row as unknown as Record<string, unknown>)[field]
-
-const filteredRows = computed(() => {
-  const normalizedKeyword = keyword.value.trim().toLowerCase()
-  return rows.value.filter((row) => {
-    const matchesKeyword =
-      !normalizedKeyword ||
-      props.config.searchFields.some((field) =>
-        String(getValue(row, field) ?? '')
-          .toLowerCase()
-          .includes(normalizedKeyword),
-      )
-    const deleted = Boolean(getValue(row, 'isDeleted'))
-    const matchesStatus =
-      status.value === 'all' ||
-      (status.value === 'normal' && !deleted) ||
-      (status.value === 'deleted' && deleted)
-    return matchesKeyword && matchesStatus
-  })
-})
 
 const resetFilters = () => {
   keyword.value = ''
   status.value = 'all'
+  currentPage.value = 1
 }
 
-const prototypeNotice = () => {
-  ElMessage.info('当前为前端原型，详情与更多操作将在后端接口接入后开放')
+const openUrl = (value: unknown) => {
+  if (typeof value === 'string' && value) window.open(value, '_blank', 'noopener,noreferrer')
 }
 
 const getSpecifications = (value: unknown): ProductSpecification[] =>
@@ -69,59 +94,59 @@ const openCreateDialog = () => {
   dialogVisible.value = true
 }
 
-const openViewDialog = (row: ManagementRecord) => {
-  dialogMode.value = 'view'
-  editingRecord.value = cloneData(row)
-  dialogVisible.value = true
+const openRecordDialog = async (mode: 'view' | 'edit', row: ManagementRecord) => {
+  loading.value = true
+  try {
+    const { data } = await api.getDetail(row.id)
+    dialogMode.value = mode
+    editingRecord.value = cloneData(data as ManagementRecord)
+    dialogVisible.value = true
+  } catch (error) {
+    ElMessage.error(getApiErrorMessage(error, '加载详情失败'))
+  } finally {
+    loading.value = false
+  }
 }
 
-const openEditDialog = (row: ManagementRecord) => {
-  dialogMode.value = 'edit'
-  editingRecord.value = cloneData(row)
-  dialogVisible.value = true
+const openViewDialog = (row: ManagementRecord) => void openRecordDialog('view', row)
+const openEditDialog = (row: ManagementRecord) => void openRecordDialog('edit', row)
+
+const toPayload = (record: EntityFormSubmission) => {
+  const payload = { ...record } as Record<string, unknown>
+  for (const field of ['id', 'createTime', 'updateTime', 'isDeleted', 'passwordConfigured']) {
+    delete payload[field]
+  }
+  if (props.config.key === 'user' && dialogMode.value === 'edit' && !payload.password) {
+    delete payload.password
+  }
+  return payload
 }
 
-const saveRecord = (record: ManagementRecord) => {
-  if (dialogMode.value === 'create') {
-    const nextId = Math.max(0, ...rows.value.map((item) => item.id)) + 1
-    rows.value.unshift({ ...record, id: nextId } as ManagementRecord)
-    ElMessage.success(`${props.config.createLabel}成功`)
-    return
+const saveRecord = async (record: EntityFormSubmission) => {
+  try {
+    if (dialogMode.value === 'create') {
+      await api.create(toPayload(record))
+      ElMessage.success(`${props.config.createLabel}成功`)
+    } else {
+      await api.update(record.id, toPayload(record))
+      ElMessage.success('修改已保存')
+    }
+    dialogVisible.value = false
+    await loadRows()
+  } catch (error) {
+    ElMessage.error(getApiErrorMessage(error, dialogMode.value === 'create' ? '新增失败' : '更新失败'))
   }
-
-  const index = rows.value.findIndex((item) => item.id === record.id)
-  if (index >= 0) rows.value.splice(index, 1, record)
-  ElMessage.success('修改已保存')
 }
 
-const formatNow = () =>
-  new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
-
-const duplicateRecord = (row: ManagementRecord) => {
-  const nextId = Math.max(0, ...rows.value.map((item) => item.id)) + 1
-  const copied = cloneData(row)
-  const nameFields: Record<EntityPageConfig['key'], string> = {
-    video: 'videoTitle',
-    material: 'materialTitle',
-    matrix: 'platformName',
-    course: 'courseName',
-    user: 'nickname',
+const duplicateRecord = async (row: ManagementRecord) => {
+  try {
+    await api.duplicate(row.id)
+    ElMessage.success('记录已复制')
+    currentPage.value = 1
+    await loadRows()
+  } catch (error) {
+    ElMessage.error(getApiErrorMessage(error, '复制失败'))
   }
-  const nameField = nameFields[props.config.key]
-  const recordData = copied as unknown as Record<string, unknown>
-  recordData[nameField] = `${String(recordData[nameField] || '')}（副本）`
-
-  if (props.config.key === 'user') {
-    recordData.account = `${String(recordData.account || 'user')}_copy_${nextId}`
-    if (recordData.email) recordData.email = null
-  }
-
-  copied.id = nextId
-  copied.createTime = formatNow()
-  copied.updateTime = copied.createTime
-  copied.isDeleted = false
-  rows.value.unshift(copied)
-  ElMessage.success('记录已复制')
 }
 
 const toggleDeleted = async (row: ManagementRecord) => {
@@ -141,14 +166,14 @@ const toggleDeleted = async (row: ManagementRecord) => {
     }
   }
 
-  const index = rows.value.findIndex((item) => item.id === row.id)
-  if (index < 0) return
-  rows.value.splice(index, 1, {
-    ...row,
-    isDeleted: !row.isDeleted,
-    updateTime: formatNow(),
-  } as ManagementRecord)
-  ElMessage.success(row.isDeleted ? '记录已恢复' : '记录已标记删除')
+  try {
+    if (row.isDeleted) await api.restore(row.id)
+    else await api.remove(row.id)
+    ElMessage.success(row.isDeleted ? '记录已恢复' : '记录已标记删除')
+    await loadRows()
+  } catch (error) {
+    ElMessage.error(getApiErrorMessage(error, row.isDeleted ? '恢复失败' : '删除失败'))
+  }
 }
 
 interface RowCommand {
@@ -158,7 +183,7 @@ interface RowCommand {
 
 const handleRowCommand = (command: RowCommand) => {
   if (command.action === 'duplicate') {
-    duplicateRecord(command.row)
+    void duplicateRecord(command.row)
     return
   }
   void toggleDeleted(command.row)
@@ -168,6 +193,22 @@ const shortUrl = (value: unknown) => {
   const url = String(value || '')
   return url.replace(/^https?:\/\//, '').replace(/\/$/, '')
 }
+
+let searchTimer: number | undefined
+watch(keyword, () => {
+  window.clearTimeout(searchTimer)
+  searchTimer = window.setTimeout(() => {
+    currentPage.value = 1
+    void loadRows()
+  }, 300)
+})
+watch([status, pageSize], () => {
+  currentPage.value = 1
+  void loadRows()
+})
+watch(currentPage, () => void loadRows())
+
+onMounted(() => void loadRows())
 </script>
 
 <template>
@@ -199,10 +240,10 @@ const shortUrl = (value: unknown) => {
           </el-select>
           <el-button :icon="Refresh" @click="resetFilters">重置</el-button>
         </div>
-        <span class="record-count">共 {{ filteredRows.length }} 条记录</span>
+        <span class="record-count">共 {{ total }} 条记录</span>
       </div>
 
-      <el-table :data="filteredRows" row-key="id" class="management-table">
+      <el-table v-loading="loading" :data="rows" row-key="id" class="management-table">
         <el-table-column
           v-for="column in config.columns"
           :key="column.field"
@@ -228,7 +269,7 @@ const shortUrl = (value: unknown) => {
               class="url-cell"
               underline="never"
               type="primary"
-              @click="prototypeNotice"
+              @click="openUrl(getValue(row, column.field))"
             >
               <el-icon><Link /></el-icon>
               <span>{{ shortUrl(getValue(row, column.field)) }}</span>
@@ -271,7 +312,9 @@ const shortUrl = (value: unknown) => {
             >
               {{ getValue(row, column.field) }}
             </el-tag>
-            <span v-else-if="column.format === 'password'" class="password-cell">••••••••</span>
+            <span v-else-if="column.format === 'password'" class="password-cell">
+              {{ getValue(row, column.field) ? '已配置' : '未配置' }}
+            </span>
             <span v-else :class="{ 'multiline-cell': column.format === 'multiline' }">
               {{ getValue(row, column.field) ?? '—' }}
             </span>
@@ -305,11 +348,12 @@ const shortUrl = (value: unknown) => {
       </el-table>
 
       <div class="table-footer">
-        <span>数据来自 database.sql 示例记录</span>
+        <span>数据来自后端实时接口</span>
         <el-pagination
+          v-model:current-page="currentPage"
           background
           layout="prev, pager, next"
-          :total="filteredRows.length"
+          :total="total"
           :page-size="pageSize"
         />
       </div>

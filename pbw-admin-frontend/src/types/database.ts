@@ -89,6 +89,8 @@ export type EntityWritePayload = Record<string, unknown>
 
 export type ManagementRecord = Video | MaterialLibrary | MatrixAccount | Course | User
 
+export type EntityFormSubmission = ManagementRecord | (User & { password: string })
+
 export type ColumnFormat =
   | 'text'
   | 'multiline'
