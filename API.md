@@ -1980,3 +1980,807 @@ apiClient.patch(`/admin/videos/${id}`, { isDeleted: false })
 ```
 
 用户端接口不得复用 `/api/admin/` 路径，也不得返回管理字段、已删除数据、未上线课程或其他仅供后台使用的信息。
+
+### 14.1 适用范围与原型功能映射
+
+本节是 `pbw-web-frontend` 用户端的正式接口契约，依据以下原型与前端代码设计：
+
+- 页面：`HomeView.vue`、`ServicesView.vue`、`ConsultingView.vue`、`AboutView.vue`、`LoginView.vue`；
+- 路由：`pbw-web-frontend/src/router/index.ts`；
+- 类型：`pbw-web-frontend/src/types/models.ts`；
+- 当前接口调用：`pbw-web-frontend/src/api/content.ts`、`pbw-web-frontend/src/api/user.ts`；
+- 原型数据：`pbw-web-frontend/src/mock/site-data.ts`。
+
+功能与接口的对应关系如下：
+
+| 原型页面/交互 | 后端资源 | 接口 |
+| --- | --- | --- |
+| 首页封面、全网数据、关于我、幕后照片、联系方式 | 基本信息 | `GET /api/user/basic-info` |
+| 首页“猜你喜欢”、观看完整视频 | 视频作品 | `GET /api/user/videos` |
+| 首页“素材库” | 素材 | `GET /api/user/materials` |
+| 首页及关于页的平台账号 | 矩阵账号 | `GET /api/user/matrix-accounts` |
+| 服务页课程卡片 | 课程 | `GET /api/user/courses` |
+| 登录、刷新后恢复登录状态、退出 | 会话 | `POST`、`GET`、`DELETE /api/user/session` |
+| 注册 | 用户 | `POST /api/user/users` |
+| 忘记密码 | 密码重置 | `POST /api/user/password-reset-requests`、`POST /api/user/password-resets` |
+
+以下内容当前不设计后端接口：
+
+- “成长里程碑”、商业剪辑服务、合作流程和成功案例目前是前端固定展示内容，管理员端也没有对应管理资源；
+- “立即购买”“免费下载”“立即报名”“立即咨询”在原型中均为禁用按钮或占位弹窗，本版本不设计订单、支付、素材授权、课程报名和咨询单接口；
+- 购物车、地址管理不在当前原型业务链路内；若后续启用，可按产品要求优先使用客户端或服务端缓存，本版本不提供相关接口；
+- `confirmPassword` 只用于前端校验两次密码是否一致，不传给后端；“记住我”只决定前端令牌存储位置，不作为登录参数。
+
+关于本章开头“未上线课程”的说明：服务端不得返回未发布的内部草稿；原型中标记“即将上线”的课程属于已公开预告内容，应返回 `isOnline=false`。后端需要使用发布可见性区分“内部草稿”和“公开预告”，不能只凭 `isOnline` 判断用户端可见性。
+
+### 14.2 用户端通用约定
+
+#### 14.2.1 路径、认证与响应
+
+- 用户端接口统一使用 `/api/user/{resource}`；前端 Axios 的 `baseURL` 为 `/api`，因此调用路径必须从 `/user/...` 开始；
+- 基本信息、视频、素材、矩阵账号、课程、注册、登录和密码重置申请允许匿名访问；
+- 获取当前会话和退出必须携带 `Authorization: Bearer <accessToken>`；
+- 成功响应直接返回业务数据，不包裹 `code`、`data`、`message`；
+- 错误响应、状态码、时间、可空值和 `X-Request-Id` 遵循 1.3、1.4、1.5 的通用约定；
+- 用户端对象不返回 `createTime`、`updateTime`、`isDeleted`、密码、密码散列、库存管理备注等后台字段；
+- 所有公开内容查询必须过滤逻辑删除记录；URL 字段没有配置时返回 `null`；
+- JSON、query 和 path 以外的业务参数全部使用 camelCase。
+
+认证请求示例：
+
+```http
+Authorization: Bearer <accessToken>
+Accept: application/json
+```
+
+#### 14.2.2 缓存与限流
+
+| 接口类型 | 建议响应头 | 说明 |
+| --- | --- | --- |
+| 公开内容 GET | `Cache-Control: public, max-age=60, stale-while-revalidate=300` | 可配合 `ETag` 和 `If-None-Match`，未变化返回 `304 Not Modified` |
+| 会话、注册、密码相关 | `Cache-Control: no-store` | 防止敏感数据被浏览器或代理缓存 |
+
+认证相关接口必须按 IP 与账号组合限流。建议登录每个账号 5 次/分钟、注册每个 IP 10 次/小时、密码重置申请每个账号或邮箱 3 次/小时；触发限制时返回 `429 Too Many Requests`，并携带 `Retry-After`。
+
+#### 14.2.3 用户端接口总览
+
+| 模块 | 接口名称 | Method | Path | 认证 |
+| --- | --- | --- | --- | --- |
+| 认证 | 用户登录 | `POST` | `/api/user/session` | 否 |
+| 认证 | 获取当前用户会话 | `GET` | `/api/user/session` | 是 |
+| 认证 | 用户退出 | `DELETE` | `/api/user/session` | 是 |
+| 认证 | 用户注册 | `POST` | `/api/user/users` | 否 |
+| 认证 | 申请重置密码 | `POST` | `/api/user/password-reset-requests` | 否 |
+| 认证 | 确认重置密码 | `POST` | `/api/user/password-resets` | 否 |
+| 内容 | 获取公开基本信息 | `GET` | `/api/user/basic-info` | 否 |
+| 作品 | 获取视频作品列表 | `GET` | `/api/user/videos` | 否 |
+| 素材 | 获取素材列表 | `GET` | `/api/user/materials` | 否 |
+| 矩阵账号 | 获取矩阵账号列表 | `GET` | `/api/user/matrix-accounts` | 否 |
+| 课程 | 获取公开课程列表 | `GET` | `/api/user/courses` | 否 |
+
+### 14.3 用户认证模块
+
+#### 14.3.1 用户对象
+
+认证成功后返回的 `user` 对象如下。任何用户端响应均不得包含 `password`。
+
+| 字段 | 类型 | 必有 | 说明 |
+| --- | --- | --- | --- |
+| `id` | integer | 是 | 用户 ID |
+| `nickname` | string | 是 | 昵称 |
+| `account` | string | 是 | 登录账号 |
+| `email` | string \| null | 是 | 邮箱 |
+| `avatar` | string \| null | 是 | 头像 URL |
+| `role` | string | 是 | 用户端固定为 `用户` |
+
+示例：
+
+```json
+{
+  "id": 5,
+  "nickname": "电影爱好者",
+  "account": "movie_fan",
+  "email": "movie.fan@example.com",
+  "avatar": null,
+  "role": "用户"
+}
+```
+
+#### 14.3.2 用户登录
+
+**接口名称：** 用户登录
+
+**接口功能：** 校验用户账号与密码，创建用户会话并返回访问令牌。管理员账号不得通过该接口登录。
+
+**访问路径：** `/api/user/session`
+
+**请求方式：** `POST`
+**认证要求：** 无
+
+请求参数：
+
+| 参数 | 位置 | 类型 | 必填 | 约束与说明 |
+| --- | --- | --- | --- | --- |
+| `account` | body | string | 是 | 去除首尾空白，最长 255 字符 |
+| `password` | body | string | 是 | 6-72 字符；只用于本次认证，不记录明文 |
+
+请求示例：
+
+```http
+POST /api/user/session HTTP/1.1
+Content-Type: application/json
+
+{
+  "account": "movie_fan",
+  "password": "Movie2026"
+}
+```
+
+返回参数：
+
+| 字段 | 类型 | 必有 | 说明 |
+| --- | --- | --- | --- |
+| `token` | string | 是 | Bearer 访问令牌 |
+| `expiresIn` | integer | 是 | 令牌剩余有效秒数 |
+| `user` | object | 是 | 14.3.1 用户对象 |
+
+成功响应示例：
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.example",
+  "expiresIn": 7200,
+  "user": {
+    "id": 5,
+    "nickname": "电影爱好者",
+    "account": "movie_fan",
+    "email": "movie.fan@example.com",
+    "avatar": null,
+    "role": "用户"
+  }
+}
+```
+
+失败说明：账号不存在、密码错误、账号已删除或角色不是用户时统一返回 `401 UNAUTHORIZED` 和“账号或密码错误”，不得泄漏账号是否存在。
+
+#### 14.3.3 获取当前用户会话
+
+**接口名称：** 获取当前用户会话
+
+**接口功能：** 页面刷新后校验令牌并恢复 `currentUser`；不得签发新令牌。
+
+**访问路径：** `/api/user/session`
+
+**请求方式：** `GET`
+**认证要求：** Bearer Token
+
+请求参数：无。
+
+请求示例：
+
+```http
+GET /api/user/session HTTP/1.1
+Authorization: Bearer <accessToken>
+Accept: application/json
+```
+
+成功响应：`200 OK`，直接返回 14.3.1 用户对象。
+
+```json
+{
+  "id": 5,
+  "nickname": "电影爱好者",
+  "account": "movie_fan",
+  "email": "movie.fan@example.com",
+  "avatar": null,
+  "role": "用户"
+}
+```
+
+令牌缺失、过期、被撤销或对应用户已删除时返回 `401 UNAUTHORIZED`。
+
+#### 14.3.4 用户退出
+
+**接口名称：** 用户退出
+
+**接口功能：** 撤销当前访问令牌对应的服务端会话。
+
+**访问路径：** `/api/user/session`
+
+**请求方式：** `DELETE`
+**认证要求：** Bearer Token
+
+请求参数：无。
+
+请求示例：
+
+```http
+DELETE /api/user/session HTTP/1.1
+Authorization: Bearer <accessToken>
+```
+
+成功响应：
+
+```http
+HTTP/1.1 204 No Content
+Cache-Control: no-store
+```
+
+接口应保持幂等。前端收到 `204` 后清除本地令牌和 `currentUser`；若令牌已失效，前端收到 `401` 也应完成本地清理。
+
+#### 14.3.5 用户注册
+
+**接口名称：** 用户注册
+
+**接口功能：** 创建普通用户并同时创建登录会话。
+
+**访问路径：** `/api/user/users`
+
+**请求方式：** `POST`
+**认证要求：** 无
+
+请求参数：
+
+| 参数 | 位置 | 类型 | 必填 | 约束与说明 |
+| --- | --- | --- | --- | --- |
+| `nickname` | body | string | 是 | 去除首尾空白，1-50 字符 |
+| `account` | body | string | 是 | 3-32 字符，仅允许字母、数字、下划线，以字母或数字开头 |
+| `email` | body | string | 是 | 合法邮箱，最长 255 字符，存储前转为小写 |
+| `password` | body | string | 是 | 8-72 字符，至少包含字母和数字 |
+
+`confirmPassword` 和服务条款复选框由前端在提交前校验。若产品需要审计用户同意的条款版本，应另行增加同意记录资源，不能只依赖前端复选框。
+
+请求示例：
+
+```http
+POST /api/user/users HTTP/1.1
+Content-Type: application/json
+Idempotency-Key: 3c983adb-28d6-4fe8-8f35-01b652e6304f
+
+{
+  "nickname": "电影爱好者",
+  "account": "movie_fan",
+  "email": "movie.fan@example.com",
+  "password": "Movie2026"
+}
+```
+
+成功响应：`201 Created`，`Location` 指向新用户资源，响应体与登录响应一致。
+
+```http
+HTTP/1.1 201 Created
+Location: /api/user/users/5
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.example",
+  "expiresIn": 7200,
+  "user": {
+    "id": 5,
+    "nickname": "电影爱好者",
+    "account": "movie_fan",
+    "email": "movie.fan@example.com",
+    "avatar": null,
+    "role": "用户"
+  }
+}
+```
+
+账号或邮箱已存在时返回 `409 RESOURCE_CONFLICT`，`fieldErrors.field` 分别为 `account` 或 `email`；字段格式不合法时返回 `422 VALIDATION_ERROR`。
+
+#### 14.3.6 申请重置密码
+
+**接口名称：** 申请重置密码
+
+**接口功能：** 根据账号或邮箱创建一次性密码重置申请，并通过已验证邮箱发送重置链接。
+
+**访问路径：** `/api/user/password-reset-requests`
+
+**请求方式：** `POST`
+**认证要求：** 无
+
+请求参数：
+
+| 参数 | 位置 | 类型 | 必填 | 约束与说明 |
+| --- | --- | --- | --- | --- |
+| `accountOrEmail` | body | string | 是 | 用户账号或邮箱，最长 255 字符 |
+
+请求示例：
+
+```http
+POST /api/user/password-reset-requests HTTP/1.1
+Content-Type: application/json
+
+{
+  "accountOrEmail": "movie.fan@example.com"
+}
+```
+
+无论账号是否存在，均返回相同结果，避免账号枚举：
+
+```http
+HTTP/1.1 202 Accepted
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+  "message": "如果账号存在，密码重置邮件已发送"
+}
+```
+
+重置令牌必须一次性使用、短期有效，建议有效期 15 分钟；服务端不得在生产响应或日志中返回重置令牌。
+
+#### 14.3.7 确认重置密码
+
+**接口名称：** 确认重置密码
+
+**接口功能：** 消费一次性重置令牌并设置新密码，同时撤销该用户的全部已有会话。
+
+**访问路径：** `/api/user/password-resets`
+
+**请求方式：** `POST`
+**认证要求：** 无
+
+请求参数：
+
+| 参数 | 位置 | 类型 | 必填 | 约束与说明 |
+| --- | --- | --- | --- | --- |
+| `resetToken` | body | string | 是 | 邮件重置链接中的一次性令牌 |
+| `newPassword` | body | string | 是 | 8-72 字符，至少包含字母和数字 |
+
+请求示例：
+
+```http
+POST /api/user/password-resets HTTP/1.1
+Content-Type: application/json
+
+{
+  "resetToken": "upr_01J2RESETTOKEN",
+  "newPassword": "NewMovie2026"
+}
+```
+
+成功响应：
+
+```http
+HTTP/1.1 204 No Content
+Cache-Control: no-store
+```
+
+令牌无效、过期或已经使用时返回 `422 INVALID_RESET_TOKEN`，不说明具体失效原因。
+
+### 14.4 公开基本信息模块
+
+#### 14.4.1 获取公开基本信息
+
+**接口名称：** 获取公开基本信息
+
+**接口功能：** 为首页和“关于我”页面提供封面媒体、统计数据、作者介绍、幕后图片、影片/导演列表和联系方式。
+
+**访问路径：** `/api/user/basic-info`
+
+**请求方式：** `GET`
+**认证要求：** 无
+
+请求参数：无。
+
+返回参数：
+
+| 字段 | 类型 | 必有 | 说明 |
+| --- | --- | --- | --- |
+| `id` | integer | 是 | 当前基本信息记录 ID |
+| `homeCoverVideo` | string \| null | 是 | 首页封面视频 URL；前端无值时使用默认封面图 |
+| `contactEmail` | string \| null | 是 | 商务联系邮箱 |
+| `contactQrCode` | string \| null | 是 | 联系二维码图片 URL |
+| `totalPlayCount` | integer | 是 | 全网播放总数，非负整数 |
+| `totalLikeCount` | integer | 是 | 全网点赞总数，非负整数 |
+| `totalFollowerCount` | integer | 是 | 全网粉丝总数，非负整数 |
+| `authorIdentityTag` | string \| null | 是 | 作者身份标签 |
+| `slogan` | string \| null | 是 | Slogan |
+| `creationAttitude` | string \| null | 是 | 创作态度说明 |
+| `authorPhoto` | string \| null | 是 | 作者照片 URL |
+| `editingDeskWorkPhoto` | string \| null | 是 | 剪辑台工作照 URL |
+| `assetLibraryScreenshot` | string \| null | 是 | 素材库截图 URL |
+| `dailyMovieWatchingPhoto` | string \| null | 是 | 观影日常照片 URL |
+| `annualTop10Films` | string[] | 是 | 年度影片列表，最多 10 项 |
+| `influentialThreeDirectors` | string[] | 是 | 导演列表，最多 3 项 |
+| `contactInfo` | string \| null | 是 | 微信等公开联系信息 |
+
+请求示例：
+
+```http
+GET /api/user/basic-info HTTP/1.1
+Accept: application/json
+```
+
+成功响应示例：
+
+```json
+{
+  "id": 1,
+  "homeCoverVideo": "https://cdn.example.com/videos/home-cover-1.mp4",
+  "contactEmail": "contact@example.com",
+  "contactQrCode": "https://cdn.example.com/qrcode/contact-qr-1.png",
+  "totalPlayCount": 12800000,
+  "totalLikeCount": 860000,
+  "totalFollowerCount": 240000,
+  "authorIdentityTag": "电影解说创作者 / 剪辑师",
+  "slogan": "用镜头拆解故事",
+  "creationAttitude": "先理解，再表达；先克制，再准确。",
+  "authorPhoto": "https://cdn.example.com/images/author-photo-1.jpg",
+  "editingDeskWorkPhoto": "https://cdn.example.com/images/editing-desk-1.jpg",
+  "assetLibraryScreenshot": "https://cdn.example.com/images/asset-library-1.jpg",
+  "dailyMovieWatchingPhoto": "https://cdn.example.com/images/daily-movie-1.jpg",
+  "annualTop10Films": ["《奥本海默》", "《爱乐之城》", "《燃烧女子的肖像》"],
+  "influentialThreeDirectors": ["希区柯克", "诺兰", "是枝裕和"],
+  "contactInfo": "微信：brandstudio01"
+}
+```
+
+没有有效基本信息记录时返回 `404 RESOURCE_NOT_FOUND`。该接口不得返回后台审计字段。
+
+### 14.5 视频作品模块
+
+#### 14.5.1 获取视频作品列表
+
+**接口名称：** 获取视频作品列表
+
+**接口功能：** 为首页“猜你喜欢”和作品展示提供可公开播放的视频卡片。
+
+**访问路径：** `/api/user/videos`
+
+**请求方式：** `GET`
+**认证要求：** 无
+
+请求参数：
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 约束与说明 |
+| --- | --- | --- | --- | --- | --- |
+| `limit` | query | integer | 否 | `20` | `1-100`；首页可传 `4`，不传时兼容当前前端调用 |
+
+返回数组元素：
+
+| 字段 | 类型 | 必有 | 说明 |
+| --- | --- | --- | --- |
+| `id` | integer | 是 | 视频 ID |
+| `videoTitle` | string | 是 | 视频标题 |
+| `videoIntro` | string \| null | 是 | 视频简介 |
+| `videoUrl` | string | 是 | 可公开访问或短期签名的视频播放地址 |
+| `videoCover` | string \| null | 是 | 封面 URL |
+| `platformName` | string \| null | 是 | 发布平台名称，用于卡片角标 |
+| `playCountText` | string \| null | 是 | 已格式化播放量，例如 `180万` |
+
+请求示例：
+
+```http
+GET /api/user/videos?limit=4 HTTP/1.1
+Accept: application/json
+```
+
+成功响应示例：
+
+```json
+[
+  {
+    "id": 1,
+    "videoTitle": "为什么这部电影能封神",
+    "videoIntro": "从叙事结构、镜头语言和人物动机三个角度拆解。",
+    "videoUrl": "https://cdn.example.com/videos/video-1.mp4",
+    "videoCover": "https://cdn.example.com/covers/video-cover-1.jpg",
+    "platformName": "抖音",
+    "playCountText": "180万"
+  }
+]
+```
+
+返回规则：仅返回未删除且允许公开展示的视频，默认按 `createTime desc, id desc` 排序；没有数据时返回空数组 `[]`。`platformName`、`playCountText` 是原型直接消费字段，后端 DTO 和数据源必须补齐，不能依赖前端 Mock。
+
+### 14.6 素材模块
+
+#### 14.6.1 获取素材列表
+
+**接口名称：** 获取素材列表
+
+**接口功能：** 为首页素材卡片提供标题、简介、价格、数量和视觉展示信息。
+
+**访问路径：** `/api/user/materials`
+
+**请求方式：** `GET`
+**认证要求：** 无
+
+请求参数：
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 约束与说明 |
+| --- | --- | --- | --- | --- | --- |
+| `limit` | query | integer | 否 | `20` | `1-100`，不传时兼容当前前端调用 |
+
+返回数组元素：
+
+| 字段 | 类型 | 必有 | 说明 |
+| --- | --- | --- | --- |
+| `id` | integer | 是 | 素材 ID |
+| `materialTitle` | string | 是 | 素材标题 |
+| `materialPhoto` | string \| null | 是 | 素材封面 URL |
+| `materialIntro` | string \| null | 是 | 素材简介 |
+| `price` | number | 是 | 售价，最多两位小数；`0` 表示免费 |
+| `itemCount` | integer | 是 | 素材包内项目数量，非负整数 |
+| `isFree` | boolean | 是 | 是否免费，必须与 `price == 0` 一致 |
+| `colorClass` | string | 是 | 前端白名单中的颜色类名，如 `bg-blue-500` |
+| `iconName` | string | 是 | `Scissors`、`Volume2`、`Video`、`Gift` 之一 |
+| `netdiskUrl` | string \| null | 是 | 本版本仅免费素材可返回公开下载地址；付费素材必须返回 `null` |
+
+请求示例：
+
+```http
+GET /api/user/materials?limit=4 HTTP/1.1
+Accept: application/json
+```
+
+成功响应示例：
+
+```json
+[
+  {
+    "id": 1,
+    "materialTitle": "电影海报素材包",
+    "materialPhoto": "https://cdn.example.com/materials/poster-pack.jpg",
+    "materialIntro": "适合电影解说封面、分镜展示和宣传页使用。",
+    "price": 39.9,
+    "itemCount": 150,
+    "isFree": false,
+    "colorClass": "bg-blue-500",
+    "iconName": "Scissors",
+    "netdiskUrl": null
+  },
+  {
+    "id": 4,
+    "materialTitle": "粉丝福利",
+    "materialPhoto": null,
+    "materialIntro": "免费素材整合包，持续更新。",
+    "price": 0,
+    "itemCount": 100,
+    "isFree": true,
+    "colorClass": "bg-orange-500",
+    "iconName": "Gift",
+    "netdiskUrl": "https://pan.example.com/s/fans"
+  }
+]
+```
+
+返回规则：仅返回未删除且允许公开展示的素材，默认按 `createTime desc, id desc` 排序；没有数据时返回 `[]`。严禁在匿名列表中返回付费素材的真实网盘地址；启用购买功能后应通过订单授权接口签发短期下载地址。
+
+### 14.7 矩阵账号模块
+
+#### 14.7.1 获取矩阵账号列表
+
+**接口名称：** 获取矩阵账号列表
+
+**接口功能：** 为首页“关注我的更多平台”和“关于我”页面提供平台入口。
+
+**访问路径：** `/api/user/matrix-accounts`
+
+**请求方式：** `GET`
+**认证要求：** 无
+
+请求参数：无。
+
+返回数组元素：
+
+| 字段 | 类型 | 必有 | 说明 |
+| --- | --- | --- | --- |
+| `id` | integer | 是 | 矩阵账号 ID |
+| `platformName` | string | 是 | 平台名称 |
+| `platformLogo` | string \| null | 是 | 平台 Logo URL |
+| `accountUrl` | string \| null | 是 | 平台主页 URL，仅允许 `https` |
+| `intro` | string \| null | 是 | 账号简介 |
+| `followerCountText` | string \| null | 是 | 已格式化粉丝数，例如 `15万` |
+| `colorClass` | string | 是 | 前端白名单中的颜色类名，如 `bg-pink-500` |
+
+请求示例：
+
+```http
+GET /api/user/matrix-accounts HTTP/1.1
+Accept: application/json
+```
+
+成功响应示例：
+
+```json
+[
+  {
+    "id": 1,
+    "platformName": "抖音",
+    "platformLogo": "https://cdn.example.com/logos/douyin.png",
+    "accountUrl": "https://www.douyin.com/user/example",
+    "intro": "主阵地账号，更新电影解说和剪辑技巧内容。",
+    "followerCountText": "15万",
+    "colorClass": "bg-black"
+  }
+]
+```
+
+返回规则：只返回未删除的公开账号，按后台展示顺序排序；当前没有排序字段时使用 `createTime asc, id asc`。没有数据时返回 `[]`。前端打开外链时应增加 `rel="noopener noreferrer"`。
+
+### 14.8 课程模块
+
+#### 14.8.1 获取公开课程列表
+
+**接口名称：** 获取公开课程列表
+
+**接口功能：** 为“课程体系”页面提供已开课课程和公开的“即将上线”预告课程。
+
+**访问路径：** `/api/user/courses`
+
+**请求方式：** `GET`
+**认证要求：** 无
+
+请求参数：无。当前页面需要同时渲染在线和预告课程，前端不得传 `isOnline` 过滤条件。
+
+返回数组元素：
+
+| 字段 | 类型 | 必有 | 说明 |
+| --- | --- | --- | --- |
+| `id` | integer | 是 | 课程 ID |
+| `courseName` | string | 是 | 课程名称 |
+| `courseTag` | string \| null | 是 | 课程标签 |
+| `courseIntro` | string \| null | 是 | 课程简介 |
+| `coursePrice` | number | 是 | 课程价格，最多两位小数 |
+| `isOnline` | boolean | 是 | `true` 为已开课，`false` 为公开预告并显示“即将上线” |
+| `duration` | string \| null | 是 | 课程周期，例如 `8周` |
+| `lessonCount` | integer | 是 | 课时数，非负整数 |
+| `features` | string[] | 是 | 课程内容要点 |
+| `colorClass` | string | 是 | 前端白名单中的颜色类名 |
+| `iconName` | string | 是 | `Video`、`GraduationCap`、`Palette`、`TrendingUp` 之一 |
+
+请求示例：
+
+```http
+GET /api/user/courses HTTP/1.1
+Accept: application/json
+```
+
+成功响应示例：
+
+```json
+[
+  {
+    "id": 1,
+    "courseName": "电影解说入门课",
+    "courseTag": "剪辑 / 解说 / 表达",
+    "courseIntro": "从选题、脚本到剪辑节奏，完整覆盖入门流程。",
+    "coursePrice": 199,
+    "isOnline": true,
+    "duration": "8周",
+    "lessonCount": 32,
+    "features": [
+      "Pr/Ae/Final Cut Pro 软件操作",
+      "素材管理与整理逻辑",
+      "基础转场与字幕设计"
+    ],
+    "colorClass": "bg-blue-500",
+    "iconName": "Video"
+  },
+  {
+    "id": 3,
+    "courseName": "账号内容增长课",
+    "courseTag": "选题 / 复盘 / 增长",
+    "courseIntro": "帮助创作者建立稳定更新和数据复盘机制。",
+    "coursePrice": 399,
+    "isOnline": false,
+    "duration": "6周",
+    "lessonCount": 24,
+    "features": ["数据复盘流程", "内容风格定位", "账号视觉统一"],
+    "colorClass": "bg-pink-500",
+    "iconName": "Palette"
+  }
+]
+```
+
+返回规则：只返回未删除且允许用户端查看的课程，内部草稿不得返回；默认按后台展示顺序排序，没有数据时返回 `[]`。`isOnline=false` 只代表尚未开放报名，不代表内部草稿。
+
+### 14.9 前后端对接要求
+
+#### 14.9.1 前端接口路径调整
+
+当前用户端 `http` 实例的 `baseURL` 为 `/api`，正式联调时接口模块必须使用以下相对路径：
+
+```ts
+export const contentApi = {
+  getBasicInfo: () => http.get<BasicInfo>('/user/basic-info'),
+  getVideos: (limit?: number) => http.get<VideoItem[]>('/user/videos', { params: { limit } }),
+  getMaterials: (limit?: number) => http.get<MaterialItem[]>('/user/materials', { params: { limit } }),
+  getMatrixAccounts: () => http.get<MatrixAccount[]>('/user/matrix-accounts'),
+  getCourses: () => http.get<Course[]>('/user/courses'),
+}
+
+export const userApi = {
+  login: (payload: LoginPayload) => http.post<LoginResult>('/user/session', payload),
+  current: () => http.get<User>('/user/session'),
+  logout: () => http.delete('/user/session'),
+  register: (payload: RegisterPayload) => http.post<LoginResult>('/user/users', payload),
+}
+```
+
+不得继续调用当前原型中的 `/basic-info`、`/videos`、`/materials`、`/matrix-accounts`、`/courses`、`/users/login` 或 `/users/register`，这些路径不符合用户端命名空间与 RESTful 资源语义。
+
+#### 14.9.2 前端类型调整
+
+- `User` 类型删除 `password`；密码只存在于 `LoginPayload`、`RegisterPayload`、密码重置请求类型中；
+- 登录和注册返回值应定义为 `LoginResult`，包含 `token`、`expiresIn`、`user`；
+- `VideoItem` 必须保留 `platformName`、`playCountText`；
+- `MaterialItem` 必须包含 `itemCount`、`isFree`、`colorClass`、`iconName`、`netdiskUrl`；
+- `MatrixAccount` 必须包含 `followerCountText`、`colorClass`；
+- `Course` 必须包含 `isOnline`、`duration`、`lessonCount`、`features`、`colorClass`、`iconName`；
+- 用户端内容对象不应继承包含 `createTime`、`updateTime`、`isDeleted` 的 `BaseEntity`，应为公开 DTO 单独建模；
+- `homeCoverVideo` 应替换首页当前硬编码封面媒体；`contactQrCode` 应替换关于页和课程顾问区域的二维码占位图；
+- Axios 响应拦截器已返回 `response.data`，业务代码直接使用接口返回对象或数组，不再访问第二层 `data`。
+
+#### 14.9.3 当前后端 DTO 差异
+
+现有用户端控制器路径已使用 `/api/user`，但正式联调前必须修正以下契约差异：
+
+| 资源 | 原型需要但当前用户端 DTO 缺少的字段/行为 |
+| --- | --- |
+| 视频 | `platformName`、`playCountText`、可选 `limit` |
+| 素材 | `itemCount`、`isFree`、`colorClass`、`iconName`；付费素材不得暴露 `netdiskUrl` |
+| 矩阵账号 | `followerCountText`、`colorClass` |
+| 课程 | `isOnline`、`duration`、`lessonCount`、`features`、`colorClass`、`iconName`；需要返回公开预告课程 |
+| 会话 | 缺少 `GET /api/user/session` 和 `DELETE /api/user/session` |
+| 密码重置 | 缺少用户端申请和确认接口 |
+
+上述展示字段如果需要后台可配置，应增加数据库字段和管理员端编辑能力；在完成数据建模前不得由后端随意拼接 Tailwind 类名或伪造播放量、粉丝数和课时数。
+
+### 14.10 用户端错误码补充
+
+除 1.4 的通用错误码外，用户端使用以下错误码：
+
+| HTTP 状态码 | `code` | 使用场景 |
+| ---: | --- | --- |
+| 401 | `UNAUTHORIZED` | 登录失败、令牌无效、令牌过期或会话被撤销 |
+| 409 | `RESOURCE_CONFLICT` | 注册账号或邮箱已存在 |
+| 422 | `INVALID_RESET_TOKEN` | 密码重置令牌无效、过期或已使用 |
+| 422 | `VALIDATION_ERROR` | 注册、登录或密码字段校验失败 |
+| 429 | `TOO_MANY_REQUESTS` | 登录、注册或密码重置请求超过频率限制 |
+
+示例：
+
+```json
+{
+  "type": "https://pbw.example.com/problems/resource-conflict",
+  "title": "资源冲突",
+  "status": 409,
+  "code": "RESOURCE_CONFLICT",
+  "detail": "账号已存在",
+  "instance": "/api/user/users",
+  "requestId": "req_01J2USER001",
+  "fieldErrors": [
+    {
+      "field": "account",
+      "message": "账号已存在"
+    }
+  ]
+}
+```
+
+### 14.11 用户端安全与验收标准
+
+1. 所有用户端路径以 `/api/user/` 开头，JSON、query 参数全部使用 camelCase；
+2. 公开 GET 接口只返回未删除、允许公开展示的数据，不返回管理字段；
+3. 用户注册只能创建 `role=用户`，请求中的任何 `role`、`isDeleted` 等越权字段必须被忽略或拒绝；
+4. 密码使用强密码散列存储，推荐 Argon2id 或 bcrypt；响应、日志、审计数据中不得出现明文密码；
+5. 登录失败统一返回相同提示，密码重置申请统一返回 `202`，防止账号枚举；
+6. 付费素材列表的 `netdiskUrl` 必须为 `null`，不得通过匿名接口泄漏下载地址；
+7. 外部 URL 必须使用允许的协议，并在输出前校验，防止 `javascript:` 等危险地址；
+8. 视频、素材、矩阵账号和课程的返回字段必须完整匹配 14.5-14.8，不能依赖 Mock 补字段；
+9. 已公开预告且 `isOnline=false` 的课程可显示“即将上线”，内部草稿不得返回；
+10. 列表无数据返回 `[]`，可空字段返回 `null`，不得用空字符串代替；
+11. 注册成功返回 `201` 和 `Location`，退出与密码重置成功返回 `204`；
+12. 公开 GET 支持缓存协商，认证相关响应设置 `Cache-Control: no-store`；
+13. 所有接口均返回 `X-Request-Id`，并提供 OpenAPI 3.1 定义及请求/响应契约测试；
+14. 前端应覆盖登录、注册、会话恢复、退出、401 清理、409 冲突、422 字段错误和公开内容空列表场景；
+15. 购物车、地址、订单、支付、报名、咨询等未启用能力不得以占位接口进入生产契约。
