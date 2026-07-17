@@ -70,13 +70,6 @@ const handleSubmit = async () => {
         </div>
       </div>
 
-      <div class="story-metrics">
-        <div><strong>12.8M</strong><span>全网播放</span></div>
-        <i></i>
-        <div><strong>860K</strong><span>全网点赞</span></div>
-        <i></i>
-        <div><strong>240K</strong><span>全网粉丝</span></div>
-      </div>
     </section>
 
     <section class="login-panel">
@@ -85,17 +78,6 @@ const handleSubmit = async () => {
           <span>PBW ADMIN</span>
           <h2>欢迎回来</h2>
           <p>登录内容管理后台，继续今天的创作管理。</p>
-        </div>
-
-        <div class="test-mode-card is-active">
-          <div>
-            <span class="test-mode-card__icon">T</span>
-            <div>
-              <strong>后端服务</strong>
-              <small>直接连接 http://localhost:8080</small>
-            </div>
-          </div>
-          <el-tag type="success" effect="light" round>真实接口</el-tag>
         </div>
 
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent="handleSubmit">
@@ -185,8 +167,7 @@ const handleSubmit = async () => {
 }
 
 .story-brand,
-.story-content,
-.story-metrics {
+.story-content {
   position: relative;
   z-index: 2;
 }
@@ -283,35 +264,6 @@ const handleSubmit = async () => {
   font-size: 11px;
 }
 
-.story-metrics {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-}
-
-.story-metrics div {
-  display: flex;
-  flex-direction: column;
-}
-
-.story-metrics strong {
-  font-size: 18px;
-  letter-spacing: -0.02em;
-}
-
-.story-metrics span {
-  margin-top: 5px;
-  color: #64748b;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-}
-
-.story-metrics i {
-  width: 1px;
-  height: 32px;
-  background: #263246;
-}
-
 .login-panel {
   display: grid;
   min-height: 100vh;
@@ -348,55 +300,8 @@ const handleSubmit = async () => {
   font-size: 13px;
 }
 
-.test-mode-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 30px 0 25px;
-  padding: 14px 15px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: white;
-  transition: 0.2s ease;
-}
-
-.test-mode-card.is-active {
-  border-color: #c7d7ff;
-  background: #f5f8ff;
-}
-
-.test-mode-card > div {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-
-.test-mode-card__icon {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 9px;
-  background: #e5edff;
-  color: var(--pbw-blue);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.test-mode-card div div {
-  display: flex;
-  flex-direction: column;
-}
-
-.test-mode-card strong {
-  color: #334155;
-  font-size: 12px;
-}
-
-.test-mode-card small {
-  margin-top: 3px;
-  color: #94a3b8;
-  font-size: 10px;
+.login-card :deep(.el-form) {
+  margin-top: 30px;
 }
 
 .login-card :deep(.el-form-item) {
