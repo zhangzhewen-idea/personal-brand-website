@@ -104,7 +104,7 @@ const requestPasswordReset = async () => {
       <div class="login-card">
         <div class="login-card__heading">
           <span>PBW ADMIN</span>
-          <h2>欢迎回来</h2>
+          <h2>张喆闻，欢迎回来</h2>
           <p>登录内容管理后台，继续今天的创作管理。</p>
         </div>
 
